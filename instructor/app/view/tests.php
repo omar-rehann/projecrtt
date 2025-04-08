@@ -197,367 +197,221 @@ $_assign = new assign;
       </div>
     </div>
 
-  <?php }elseif (($_GET['tests'] == "view") && (isset($_GET['id']))) {
+    <?php
+} elseif (($_GET['tests'] == "view") && (isset($_GET['id']))) {
     $_tests = new test();
     $test = $_tests->getByID($_GET['id']);
-    $testRandoms = $_tests->getRandomRules($_GET['id']);
     $readOnly = $_tests->isReadOnly($_GET['id']);
     $testAverage = $_tests->testAverage($_GET['id']);
-     ?>
-      <div class="col-md-12">
-          <div class="card">
-            <div class="card-header">
-              <strong class="card-title"><?php echo $test->name ?></strong>
-              <?php if($readOnly){ ?>
-              <span class="badge badge-success m-1">Average Grade: <?php echo $testAverage ?>%</span>
-              <a href="?tests=model&id=<?php echo $test->id ?>" class="btn btn-outline-success float-right"><i class="fa fa-eye"></i>View Model Answer</a>
-            <?php }else{ ?>
-              <button type="button" class="btn btn-outline-primary float-right" data-toggle="modal" data-target="#editTest" data-tname="<?php echo $test->name ?>" data-tid="<?php echo $test->id ?>" data-tcourse="<?php echo $test->courseID ?>"><i class="fa fa-edit"></i>Edit</button>
+?>
+<div class="col-md-12">
+    <div class="card">
+        <div class="card-header">
+            <strong class="card-title"><?php echo $test->name ?></strong>
+            <?php if ($readOnly) { ?>
+                <span class="badge badge-success m-1">Average Grade: <?php echo $testAverage ?>%</span>
+                <a href="?tests=model&id=<?php echo $test->id ?>" class="btn btn-outline-success float-right"><i class="fa fa-eye"></i> View Model Answer</a>
+            <?php } else { ?>
+                <button type="button" class="btn btn-outline-primary float-right" data-toggle="modal" data-target="#editTest" data-tname="<?php echo $test->name ?>" data-tid="<?php echo $test->id ?>" data-tcourse="<?php echo $test->courseID ?>"><i class="fa fa-edit"></i> Edit</button>
             <?php } ?>
+        </div>
+        <?php echo ($readOnly ? '<span class="alert alert-warning m-4" role="alert">The test is readonly because it was taken by students.  <a href="app/controller/test.inc.php?duplicateTest=' . $test->id . '" class="alert-link">Duplicate Test?</a></span>' : ''); ?>
+        <div class="card-body">
+            <input type="hidden" id="testID" value="<?php echo $test->id ?>">
+            <div class="row">
+                <div class="col-12">
+                    <label class="control-label mb-3">Test Name: </label>
+                    <label class="control-label mb-3"><?php echo $test->name ?></label>
+                </div>
+                <div class="col-12">
+                    <label class="control-label mb-3">Course: </label>
+                    <label class="control-label mb-3"><strong><?php echo $test->course ?></strong></label>
+                </div>
+                <div class="col-12">
+                    <label class="control-label mb-3">Results: </label>
+                    <label class="control-label mb-3"><span class="badge badge-info"><?php echo $test->inResults ?></span></label>
+                </div>
+                <div class="col-12">
+                    <label class="control-label mb-3">Questions: </label>
+                    <label class="control-label mb-3"><span class="badge badge-primary"><?php echo (!empty($test->fixedQuestions) ? $test->fixedQuestions : '0') ?> Fixed</span></label>
+                </div>
+                <div class="col-12">
+                    <label class="control-label mb-3">Total Points: </label>
+                    <label class="control-label mb-3"><span class="badge badge-info"><?php echo $test->TestGrade ?></span></label>
+                </div>
             </div>
-            <?php echo ($readOnly? '<span class="alert alert-warning m-4" role="alert">The test is readonly because it was taken by students.  <a href="app/controller/test.inc.php?duplicateTest=' . $test->id .'" class="alert-link">Duplicate Test?</a></span>':''); ?>
-            <div class="card-body">
-              <input type="hidden" id="testID" value="<?php echo $test->id ?>">
-              <div class="row">
-              <div class="col-6">
-                <label class="control-label mb-3">Test Name:  </label>
-                <label class="control-label mb-3"><?php echo $test->name ?></label>
-              </div>
-              <div class="col-6">
-                <label class="control-label mb-3">Course:  </label>
-                <label class="control-label mb-3"><strong><?php echo $test->course ?></strong></label>
-              </div>
-              <div class="col-6">
-                <label class="control-label mb-3">Assigned :  </label>
-                <label class="control-label mb-3"><span class="badge badge-primary"><?php echo $test->links ?> Link</span></label>
-              </div>
-              <div class="col-6">
-                <label class="control-label mb-3">Results:  </label>
-                <label class="control-label mb-3"><span class="badge badge-info"><?php echo $test->inResults ?></span></label>
-              </div>
-              <div class="col-6">
-                <label class="control-label mb-3">Questions:  </label>
-                <label class="control-label mb-3"><span class="badge badge-primary"><?php echo (!empty($test->fixedQuestions)? $test->fixedQuestions : '0') ?> Fixed + <?php echo (!empty($test->randomQuestions)? $test->randomQuestions : '0') ?> Random</span></label>
-              </div>
-              <div class="col-6">
-                <label class="control-label mb-3">Total Points:  </label>
-                <label class="control-label mb-3"><span class="badge badge-info"><?php echo $test->TestGrade ?> + Random Points</span></label>
-              </div>
-              </div>
-              <br>
-              <br>
-              <br>
-              <hr>
-              <?php if(!$readOnly){ ?>
-              <div class="container">
-                  <div class="form-row align-items-center">
-                    <div class="col-3">
-                      Random Questions:
-                    </div>
-                    <div class="form-row align-items-center">
-                    <div class="col-auto">
-                      Add
-                    </div>
-                    <div class="col-auto">
-                       <input type="number" class="form-control" style="max-width:80px" id="numofQ" placeholder="No. Of Questions" value="1" min="1" required>
-                    </div>
-                    <div class="col-auto">
-                      <select name="difficulty" id="difficulty" style="max-width:100px" class="form-control" required>
-													<option value="1">Easy</option>
-													<option value="2">Moderate</option>
-													<option value="3">Hard</option>
-										</select>
-                    </div>
-                    <div class="col-auto">
-                        Questions From
-                    </div>
-                    <div class="col-auto">
-                      <select name="Course" id="select" class="form-control"  required oninvalid="this.setCustomValidity('Please Add New Topic Before Adding Tests')">
-                        <?php
-												$cat = new course;
-												$parents = $cat->getAllParents();
-												foreach ($parents as $parent) {
-													echo '<optgroup label="'. $parent->name .'">';
-													$childs = $cat->getAllChilds($parent->id);
-													foreach ($childs as $child) {
-																echo '<option value="'. $child->id .'">'. $child->name .'</option>';
-													}
-													echo '</optgroup>';
-												}
-												?>
-                      </select>
-                    </div>
-                    <div class="col-auto">
-                      <button type="button" id="createRandomRule" class="btn btn-primary mb-1">Add</button>
-                    </div>
-                    </div>
-
-                  </div>
-
-                  <div class="form-row align-items-center">
-
-                    <div class="col-3">
-                    </div>
-                    <input type="hidden" id="tstID" value="<?php echo $_GET['id']; ?>">
-                    <ul class="list-group" id="RandomRules">
-                      <?php
-                      foreach($testRandoms as $rand){ ?>
-                        <li class="list-group-item randomli">
-                          <div class="row">
-                            <?php echo ($rand->validCount?'<i class="fa fa-exclamation-circle text-danger circle-warning" title="No enought Questions" aria-hidden="true"></i>':'') ?>
-                            <div class="col-auto">
-                              Adding
-                            </div>
-                            <div class="col-auto">
-                              <span class="badge badge-primary"><?php echo $rand->questionsCount ?></span>
-                            </div>
-                            <div class="col-auto">
-                              <?php $difficultLevels = [1=>'Easy',2=>'Moderate',3=>'Hard'] ?>
-                              <?php $difficultColors = [1=>'badge-success',2=>'badge-warning',3=>'badge-danger'] ?>
-                              <span class="badge <?php echo $difficultColors[$rand->difficulty]; ?> diffspan"><?php echo $difficultLevels[$rand->difficulty];?></span>
-                            </div>
-                            <div class="col-auto">
-                              Questions From
-                            </div>
-                            <div class="col-auto">
-                              <span class="badge badge-info crsname"><?php echo $rand->course ?></span>
-                            </div>
-                              <i class="fa fa-trash-o deleteCrsQuestions text-danger circle-warning" data-diff = "<?php echo $rand->difficulty; ?>" data-tid="<?php echo $rand->testID ?>" data-cid="<?php echo $rand->courseID ?>"></i>
-                            </div>
-                          </li>
-                        <?php } ?>
-                    </ul>
-                    <div class="col-sm">
-
-                    </div>
-
-                  </div>
-              </div>
-            <?php } ?>
-              <hr>
-              <br>
-              <h4>Test Assigns</h4>
-                <table class="table table-hover">
-                  <thead>
-                    <tr>
-                      <th>Name</th>
-                      <th>Status</th>
-                      <th>-</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                        <?php
-                    $invitations = $_assign->getTestInvitations($test->id);
-                    foreach($invitations as $v){ ?>
-                      <tr>
-                        <td><?php echo (empty($v->name)? 'No Name':$v->name) ?></td>
-                        <td><?php if ($v->status == 1)  echo '<i class="fa fa-calendar" style="color:#28a745" title="Available" aria-hidden="true"></i> Active';
-                          elseif ($v->status == 2) echo '<i class="fa fa-calendar" style="color:gray" title="Not Available" aria-hidden="true"></i> Not Started Yet';
-                          else echo '<i class="fa fa-calendar" style="color:gray" title="Not Available" aria-hidden="true"></i> Not Active'; ?>
-                        </td>
-                        <td><a class="showLink"
-                          data-random="<?php echo ($v->random?'Yes':'No') ?>"
-                          data-pass="<?php echo $v->passPercent ?>%"
-                          data-duration="<?php echo $v->duration ?> Minutes"
-                          data-sendtostudent="<?php echo ($v->sendToStudent?'Yes':'No') ?>"
-                          data-startTime="<?php echo $v->startTime ?>"
-                          data-endTime="<?php echo $v->endTime ?>"
-                          data-id="<?php echo $v->id ?>"
-                          data-link="<?php echo "http://" . $_SERVER['SERVER_NAME'] . '/student/?tests&code=' . $v->invite . '&start' ?>">View</a> |
-                            <a href="?assign&AssignToLink&linkID=<?php echo $v->id ?>">Settings</a> |
-                            <a href="?results&code=<?php echo $v->id ?>">Results</a> |
-                            <a href="app/controller/assign.inc.php?deleteLink=<?php echo $v->id ?>" onclick="return confirm('Are you sure You want to delete this Link?')">Delete</a>
-                        </td>
-                      </tr>
-
-                  <?php } ?>
-                </tbody>
-              </table>
-
-
-                  <hr>
-                  <a href="?assign&test=<?php echo $test->id ?>" id="assignButton" data-questions="<?php echo $test->fixedQuestions + $test->randomQuestions ?>" type="button" class="btn btn-outline-success float-right mb-1"><i class="fa fa-plus"></i>Assign</a>
-
-            </div>
-            <br>
-            <?php if(!$readOnly){ ?>
+            <hr>
+            <hr>
+            <h4>Test Assigns</h4>
+            <table class="table table-hover">
+    <tbody>
+        <?php
+        $invitations = $_assign->getTestInvitations($test->id);
+        foreach ($invitations as $v) { ?>
+            <tr>
+                <td><?php echo (empty($v->name) ? 'No Name' : $v->name) ?></td>
+                <td><?php 
+                    if ($v->status == 1) echo '<i class="fa fa-calendar" style="color:#28a745" title="Available" aria-hidden="true"></i> Active';
+                    elseif ($v->status == 2) echo '<i class="fa fa-calendar" style="color:gray" title="Not Available" aria-hidden="true"></i> Not Started Yet';
+                    else echo '<i class="fa fa-calendar" style="color:gray" title="Not Available" aria-hidden="true"></i> Not Active'; 
+                ?></td>
+                <td>
+                    <a class="showLink"
+                        data-pass="<?php echo $v->passPercent ?>%"
+                        data-duration="<?php echo $v->duration ?> Minutes"
+                        data-sendtostudent="<?php echo ($v->sendToStudent ? 'Yes' : 'No') ?>"
+                        data-startTime="<?php echo $v->startTime ?>"
+                        data-endTime="<?php echo $v->endTime ?>"
+                        data-id="<?php echo $v->id ?>">View</a> |
+                    <a href="?results&code=<?php echo $v->id ?>">Results</a>
+                </td>
+            </tr>
+        <?php } ?>
+    </tbody>
+</table>
+            <hr>
+            <a href="?assign&test=<?php echo $test->id ?>" id="assignButton" data-questions="<?php echo $test->fixedQuestions ?>" type="button" class="btn btn-outline-success btn-block mb-1"><i class="fa fa-plus"></i> Assign</a>        </div>
+        <br>
+        <?php if (!$readOnly) { ?>
             <div class="card-header" style="background:inherit;">
-            <h4 class="float-left">Test Questions</h4>
-            <a href="?tests=addQuestions&id=<?php echo $test->id ?>" type="button" class="btn btn-outline-primary float-right m-1"><i class="fa fa-plus"></i> Add Fixed Questions</a>
-            <form id="testQuestions" action="app/controller/test.inc.php?deleteQuestionsFromTest=<?php echo $test->id ?>" method="post">
-              <button class="btn btn-outline-danger float-right m-1" type="submit"><i class="fa fa-trash"></i>Delete Selected</button>
-            </form>
+                <h4 class="float-left">Test Questions</h4>
+                <a href="?tests=addQuestions&id=<?php echo $test->id ?>" type="button" class="btn btn-outline-primary float-right m-1"><i class="fa fa-plus"></i> Add Fixed Questions</a>
+                <form id="testQuestions" action="app/controller/test.inc.php?deleteQuestionsFromTest=<?php echo $test->id ?>" method="post">
+                    <button class="btn btn-outline-danger float-right m-1" type="submit"><i class="fa fa-trash"></i> Delete Selected</button>
+                </form>
             </div>
             <div class="card-body">
-              <table id="deleteQuestionsFromTest" class="table table-striped table-bordered">
-                <thead>
-                  <tr>
-                    <th></th>
-                    <th class="d-none">ID</th>
-                    <th>Question</th>
-                    <th>Course</th>
-                    <th>Points</th>
-                    <th>Type</th>
-                    <th>Difficulty</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <?php
-                  $_tests = new test();
-                  $Questions = $_tests->getQuestionsInTest($_GET['id']);
-                  $qTypes = [0=>'Multiple Choise',1=>'True/False',2=>'Complete',3=>'Multiple Select',4=>'Matching',5=>'Essay'];
-                  foreach ($Questions as $question) { ?>
-                    <tr>
-                      <td></td>
-                      <td class="d-none">
-                        <?php echo  $question->id ?>
-                      </td>
-                      <td class="text-wrap" style="max-width:300px">
-                        <?php echo  $question->question ?>
-                      </td>
-                      <td>
-                        <?php echo  $question->course ?>
-                      </td>
-                      <td class="qDegree text-center" name="qDegree">
-                        <span class="badge badge-success"><?php echo $question->questionGrade ?></span>
-                      </td>
-                      <td><?php echo $qTypes[$question->type]; ?></td>
-                      <td><?php echo (($question->difficulty == 1)?'<span class="badge badge-success">Easy</span>':(($question->difficulty == 2)?'<span class="badge badge-warning">Moderate</span>':'<span class="badge badge-danger">Hard</span>')) ?></td>
-                    </tr>
-                    <?php  } ?>
-                </tbody>
-              </table>
-
+                <table id="deleteQuestionsFromTest" class="table table-striped table-bordered">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th class="d-none">ID</th>
+                            <th>Question</th>
+                            <th>Course</th>
+                            <th>Points</th>
+                            <th>Type</th>
+                            <th>Difficulty</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php
+                        $_tests = new test();
+                        $Questions = $_tests->getQuestionsInTest($_GET['id']);
+                        $qTypes = [0 => 'Multiple Choice', 1 => 'True/False', 2 => 'Complete', 3 => 'Multiple Select', 4 => 'Matching', 5 => 'Essay'];
+                        foreach ($Questions as $question) { ?>
+                            <tr>
+                                <td></td>
+                                <td class="d-none"><?php echo $question->id ?></td>
+                                <td class="text-wrap" style="max-width:300px"><?php echo $question->question ?></td>
+                                <td><?php echo $question->course ?></td>
+                                <td class="qDegree text-center" name="qDegree"><span class="badge badge-success"><?php echo $question->questionGrade ?></span></td>
+                                <td><?php echo $qTypes[$question->type]; ?></td>
+                                <td><?php echo (($question->difficulty == 1) ? '<span class="badge badge-success">Easy</span>' : (($question->difficulty == 2) ? '<span class="badge badge-warning">Moderate</span>' : '<span class="badge badge-danger">Hard</span>')) ?></td>
+                            </tr>
+                        <?php } ?>
+                    </tbody>
+                </table>
             </div>
-          <?php }else{ ?>
+        <?php } else { ?>
             <h3 class="ml-3">Questions</h3>
             <?php
-              $rep = new report;
-              $questions = $rep->getQuestionsInTest($_GET['id']);
-              $i = 0;
-              foreach($questions as $question){
+            $rep = new report;
+            $questions = $rep->getQuestionsInTest($_GET['id']);
+            $i = 0;
+            foreach ($questions as $question) {
                 $i++;
                 $questionDetails = $rep->getQuestionReport($question->id);
-                $questionAnswers = $rep->questionAnswersStats($question->id,$question->type);
+                $questionAnswers = $rep->questionAnswersStats($question->id, $question->type);
                 $crt = $questionDetails->rightAnswers;
                 $wrg = $questionDetails->wrongAnswers;
                 $ttl = $questionDetails->inResults;
-                $correct = round(($crt / $ttl) * 100,0);
-                $wrong = round(($wrg / $ttl) * 100,0);
+                $correct = round(($crt / $ttl) * 100, 0);
+                $wrong = round(($wrg / $ttl) * 100, 0);
             ?>
-            <div class="card m-1">
-              <div class="card-body">
-                <blockquote class="blockquote">
-                  <?php echo $i ?>) <?php echo $questionDetails->question ?>
-                  <span class="badge badge-<?php echo ($correct<50)?'danger':'success' ?>">
-                    <?php echo $correct ?>%
-                  </span>
-                  <?php echo (($questionDetails->difficulty == 1)?'<span class="badge badge-success">Easy</span>':(($questionDetails->difficulty == 2)?'<span class="badge badge-warning">Moderate</span>':'<span class="badge badge-danger">Hard</span>')) ?>
-                </blockquote>
-                <?php if ($questionDetails->type < 4){ ?>
-                <button class="btn  bg-danger text-light" type="button" data-toggle="collapse" data-target="#question<?php echo $i ?>" aria-expanded="true" aria-controls="collapseOne">
-                  View Stats
-                </button>
-                <a class="btn  btn-primary float-right" type="button" href="?questions=view&id=<?php echo $questionDetails->id; ?>">
-                  View Question
-                </a>
-                <div id="question<?php echo $i ?>" class="collapse">
-                  <div class="card-body">
-                    <table class="table table-hover">
-                      <thead>
-                        <tr>
-                          <th scope="col">Answer</th>
-                          <th scope="col">Selected</th>
-                          <th scope="col">Correct</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                    <?php
-                    foreach($questionAnswers as $answer){ ?>
-                      <tr>
-                        <td><?php echo $answer->answer ?></td>
-                        <td><?php echo $answer->c ?></td>
-                        <td><?php echo ($answer->isCorrect == 0)? 'No':'Yes' ?></td>
-                      </tr>
-                      <?php
-                    }
-                     ?>
-                   </tbody>
-                 </table>
-
-                 <div class="row form-group">
-                   <div class="col col-md-3">
-                     <label>Answers Rate</label>
-                   </div>
-                 <div class="col-12 col-md-9">
-       						<div class="progress" style="height:1.5rem;font-size:1.5rem">
-       						  <div class="progress-bar bg-success" role="progressbar" style="width:<?php echo $correct?>%">
-       						    <?php echo $correct?>% Correct
-       						  </div>
-       						  <div class="progress-bar bg-danger" role="progressbar" style="width:<?php echo $wrong ?>%">
-       						    <?php echo $wrong ?>% Wrong
-       						  </div>
-       						</div>
-       					</div>
-       					</div>
-              </div>
+                <div class="card m-1">
+                    <div class="card-body">
+                        <blockquote class="blockquote">
+                            <?php echo $i ?>) <?php echo $questionDetails->question ?>
+                            <span class="badge badge-<?php echo ($correct < 50) ? 'danger' : 'success' ?>"><?php echo $correct ?>%</span>
+                            <?php echo (($questionDetails->difficulty == 1) ? '<span class="badge badge-success">Easy</span>' : (($questionDetails->difficulty == 2) ? '<span class="badge badge-warning">Moderate</span>' : '<span class="badge badge-danger">Hard</span>')) ?>
+                        </blockquote>
+                        <?php if ($questionDetails->type < 4) { ?>
+                            <button class="btn bg-danger text-light" type="button" data-toggle="collapse" data-target="#question<?php echo $i ?>" aria-expanded="true" aria-controls="collapseOne">View Stats</button>
+                            <a class="btn btn-primary float-right" type="button" href="?questions=view&id=<?php echo $questionDetails->id; ?>">View Question</a>
+                            <div id="question<?php echo $i ?>" class="collapse">
+                                <div class="card-body">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th scope="col">Answer</th>
+                                                <th scope="col">Selected</th>
+                                                <th scope="col">Correct</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php foreach ($questionAnswers as $answer) { ?>
+                                                <tr>
+                                                    <td><?php echo $answer->answer ?></td>
+                                                    <td><?php echo $answer->c ?></td>
+                                                    <td><?php echo ($answer->isCorrect == 0) ? 'No' : 'Yes' ?></td>
+                                                </tr>
+                                            <?php } ?>
+                                        </tbody>
+                                    </table>
+                                    <div class="row form-group">
+                                        <div class="col col-md-3"><label>Answers Rate</label></div>
+                                        <div class="col-12 col-md-9">
+                                            <div class="progress" style="height:1.5rem;font-size:1.5rem">
+                                                <div class="progress-bar bg-success" role="progressbar" style="width:<?php echo $correct ?>%"><?php echo $correct ?>% Correct</div>
+                                                <div class="progress-bar bg-danger" role="progressbar" style="width:<?php echo $wrong ?>%"><?php echo $wrong ?>% Wrong</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php } ?>
+                    </div>
                 </div>
-              <?php } ?>
-
-              </div>
-            </div>
-
-          <?php               } } ?>
-
-          </div>
-        </div>
-        <div class="modal fade" id="editTest" tabindex="-1" role="dialog" aria-labelledby="editTestLabel" aria-hidden="true">
-          <div class="modal-dialog modal-md" role="document">
-            <div class="modal-content">
-              <div class="modal-header">
+            <?php } ?>
+        <?php } ?>
+    </div>
+</div>
+<div class="modal fade" id="editTest" tabindex="-1" role="dialog" aria-labelledby="editTestLabel" aria-hidden="true">
+    <div class="modal-dialog modal-md" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
                 <h5 class="modal-title" id="editTestLabel">Update Test</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                  <span aria-hidden="true">&times;</span>
-                </button>
-              </div>
-              <div class="modal-body">
-                <form action="app/controller/test.inc.php?editTest" id="edittestform" method="post" class="">
-                  <input type="hidden" name="testid">
-                  <div class="row form-group">
-                    <div class="col col-md-3">
-                      <label for="testName" class=" form-control-label">Test Name:</label>
-                    </div>
-                    <div class="col-12 col-md-9">
-                      <input type="text" name="testName" rows="1" placeholder="Test Name..." class="form-control" required>
-                    </div>
-                  </div>
-                  <div class="row form-group">
-                    <div class="col col-md-3">
-                      <label for="select" class=" form-control-label">Course</label>
-                    </div>
-                    <div class="col-12 col-md-9">
-                      <select name="Course" class="form-control"  required oninvalid="this.setCustomValidity('Please Add New Topic Before Adding Tests')">
-                        <?php
-                          $cat = new course();
-                          $parents = $cat->getAllParents();
-                          foreach ($parents as $parent) {
-                                  echo '<option value="'. $parent->id .'">'. $parent->name .'</option>';                          } ?>
-                      </select>
-                    </div>
-                  </div>
-                </form>
-              </div>
-              <div class="modal-footer">
-                <button type="submit" form="edittestform" class="btn btn-primary">
-                  <i class="fa fa-dot-pen"></i> Update
-                </button>
-              </div>
-
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
             </div>
-
-          </div>
+            <div class="modal-body">
+                <form action="app/controller/test.inc.php?editTest" id="edittestform" method="post" class="">
+                    <input type="hidden" name="testid">
+                    <div class="row form-group">
+                        <div class="col col-md-3"><label for="testName" class="form-control-label">Test Name:</label></div>
+                        <div class="col-12 col-md-9"><input type="text" name="testName" rows="1" placeholder="Test Name..." class="form-control" required></div>
+                    </div>
+                    <div class="row form-group">
+                        <div class="col col-md-3"><label for="select" class="form-control-label">Course</label></div>
+                        <div class="col-12 col-md-9">
+                            <select name="Course" class="form-control" required oninvalid="this.setCustomValidity('Please Add New Topic Before Adding Tests')">
+                                <?php
+                                $cat = new course();
+                                $parents = $cat->getAllParents();
+                                foreach ($parents as $parent) {
+                                    echo '<option value="' . $parent->id . '">' . $parent->name . '</option>';
+                                } ?>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" form="edittestform" class="btn btn-primary"><i class="fa fa-dot-pen"></i> Update</button>
+            </div>
         </div>
-    <?php } elseif ($_GET['tests'] == "trash") { ?>
+    </div>
+</div>
+<?php } elseif ($_GET['tests'] == "trash") { ?>
           <div class="col-md-12">
             <?php
                                     if (isset($_SESSION['error'])) {
@@ -600,8 +454,7 @@ $_assign = new assign;
                         <tr>
                           <td><?php echo $test->name ?></td>
                           <td><?php echo $test->course ?></td>
-                          <td><span class="badge badge-success"><?php echo $test->fixedQuestions + $test->randomQuestions ?></span></td>
-                          <td><span class="badge badge-success"><?php echo $test->inResults ?></span></td>
+                          <td><span class="badge badge-success"><?php echo $test->fixedQuestions ?></span></td>                          <td><span class="badge badge-success"><?php echo $test->inResults ?></span></td>
                           <td>
                             <button type="button" onclick="window.location.href='app/controller/test.inc.php?restoreTest=<?php echo $test->id ?>'" class="btn btn-outline-primary btn-block"><i class="fa fa-undo"></i> Restore</button>
                           </td>
@@ -669,8 +522,7 @@ $_assign = new assign;
                               <td>
                                 <?php echo $test->course ?>
                               </td>
-                              <td><span class="badge badge-success"><?php echo $test->fixedQuestions + $test->randomQuestions ?></span></td>
-                              <td><span class="badge badge-success"><?php echo $test->inResults ?></span></td>
+                              <td><span class="badge badge-success"><?php echo $test->fixedQuestions ?></span></td>                              <td><span class="badge badge-success"><?php echo $test->inResults ?></span></td>
                               <td>
                                 <button type="button" class="btn btn-outline-success btn-block" data-toggle="modal" onclick="javascript: window.location.href='?tests=view&id=<?php echo $test->id ?>'"><i class="fa fa-eye"></i>View</button>
                               </td>

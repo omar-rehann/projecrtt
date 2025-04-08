@@ -7,7 +7,6 @@ include_once 'autoloader.inc.php';
   $groupID    = !empty($_POST['groupID']) ? trim($_POST['groupID']) : 0;
   $startTime  = !empty($_POST['startTime']) ? date('Y-m-d H:i:s',strtotime($_POST['startTime'])) : null;
   $endTime    = !empty($_POST['endTime']) ? date('Y-m-d H:i:s',strtotime($_POST['endTime'])) : null;
-  $random     = !empty($_POST['random']) ? 1 : 0;
   $prevQuestion = !empty($_POST['prevQuestion']) ? 1 : 0;
   $duration   = !empty($_POST['duration']) ? trim($_POST['duration']) : 0;
   $percent    = !empty($_POST['percent']) ? trim($_POST['percent']) : 0;
@@ -25,8 +24,7 @@ include_once 'autoloader.inc.php';
     echo 'Group ID is not valid';
   else{
     $newAssign = new assign;
-    $newAssign->createSetting($startTime,$endTime,$random,$prevQuestion,$duration,$percent,$viewAnswers,$releaseResult,$sendToS,$sendToI);
-    $newAssign->AssignToGroup($groupID,$testID);
+    $newAssign->createSetting($startTime, $endTime, $prevQuestion, $duration, $percent, $viewAnswers, $releaseResult, $sendToS, $sendToI);    $newAssign->AssignToGroup($groupID,$testID);
     header("Location: ../../?groups");exit;
   }
 }else if (isset($_GET['deleteAssignedTest'])){

@@ -4,53 +4,57 @@ class test extends dbh
 {
 
     public function getAll()
-    {
-        $stmt = $this->connect()->prepare("select id,name,
-        instructorID,courseID,
-        (select name from course where id = courseID) as course,
-        (select count(*) from tests_has_questions where testID = t.id) as fixedQuestions,
-        (select sum(questionsCount) from test_random_questions where testID = t.id) as randomQuestions,
-        (select count(*) from result where testID = t.id) as inResults,
-				(select count(*) from test_invitations where testID = t.id) links
-         from test t where instructorID = :aid and !deleted");
-        $stmt->bindparam(":aid", $_SESSION['mydata']->id);
-        $stmt->execute();
-        $result=$stmt->fetchAll(PDO::FETCH_OBJ);
-        return $result;
-    }
-    public function getDeleted()
-    {
-      $stmt = $this->connect()->prepare("select id,name,
-      instructorID,courseID,
-      (select name from course where id = courseID) as course,
-      (select count(*) from tests_has_questions where testID = t.id) as fixedQuestions,
-      (select sum(questionsCount) from test_random_questions where testID = t.id) as randomQuestions,
-      (select count(*) from result where testID = t.id) as inResults,
-      (select count(*) from test_invitations where testID = t.id) links,
-      (select count(*) from groups where assignedTest = t.id) inGroups
-       from test t where instructorID = :aid and deleted");
-        $stmt->bindparam(":aid", $_SESSION['mydata']->id);
-        $stmt->execute();
-        $result=$stmt->fetchAll(PDO::FETCH_OBJ);
-        return $result;
-    }
-    public function getByID($id)
-    {
-      $stmt = $this->connect()->prepare("select id,name,
-      instructorID,courseID,(select name from course where id = courseID) as course,
-      (select count(*) from test_invitations where testID = t.id) as assignedToLinks,
-      (select count(*) from tests_has_questions where testID = t.id) as fixedQuestions,
-      (select sum(questionsCount) from test_random_questions where testID = t.id) as randomQuestions,
-      (select count(*) from test_invitations where testID = t.id) links,
-      (select count(*) from result where testID = t.id) as inResults,
-	     getTestGrade(id) as TestGrade
-       from test t where instructorID = :aid and id = :id");
-        $stmt->bindparam(":id", $id);
-        $stmt->bindparam(":aid", $_SESSION['mydata']->id);
-        $stmt->execute();
-        $result=$stmt->fetchAll(PDO::FETCH_OBJ);
-        return $result[0];
-    }
+{
+    $stmt = $this->connect()->prepare("SELECT id, name,
+    instructorID, courseID,
+    (SELECT name FROM course WHERE id = courseID) as course,
+    (SELECT count(*) FROM tests_has_questions WHERE testID = t.id) as fixedQuestions,
+    (SELECT count(*) FROM result WHERE testID = t.id) as inResults,
+    (SELECT count(*) FROM test_invitations WHERE testID = t.id) links
+    FROM test t WHERE instructorID = :aid AND !deleted");
+
+    $stmt->bindparam(":aid", $_SESSION['mydata']->id);
+    $stmt->execute();
+    $result = $stmt->fetchAll(PDO::FETCH_OBJ);
+    return $result;
+}
+
+public function getDeleted()
+{
+    $stmt = $this->connect()->prepare("SELECT id, name,
+    instructorID, courseID,
+    (SELECT name FROM course WHERE id = courseID) as course,
+    (SELECT count(*) FROM tests_has_questions WHERE testID = t.id) as fixedQuestions,
+    (SELECT count(*) FROM result WHERE testID = t.id) as inResults,
+    (SELECT count(*) FROM test_invitations WHERE testID = t.id) links,
+    (SELECT count(*) FROM groups WHERE assignedTest = t.id) inGroups
+    FROM test t WHERE instructorID = :aid AND deleted");
+
+    $stmt->bindparam(":aid", $_SESSION['mydata']->id);
+    $stmt->execute();
+    $result = $stmt->fetchAll(PDO::FETCH_OBJ);
+    return $result;
+}
+
+public function getByID($id)
+{
+    $stmt = $this->connect()->prepare("SELECT id, name,
+    instructorID, courseID, 
+    (SELECT name FROM course WHERE id = courseID) as course,
+    (SELECT count(*) FROM test_invitations WHERE testID = t.id) as assignedToLinks,
+    (SELECT count(*) FROM tests_has_questions WHERE testID = t.id) as fixedQuestions,
+    (SELECT count(*) FROM test_invitations WHERE testID = t.id) links,
+    (SELECT count(*) FROM result WHERE testID = t.id) as inResults,
+    getTestGrade(id) as TestGrade
+    FROM test t WHERE instructorID = :aid AND id = :id");
+
+    $stmt->bindparam(":id", $id);
+    $stmt->bindparam(":aid", $_SESSION['mydata']->id);
+    $stmt->execute();
+    $result = $stmt->fetchAll(PDO::FETCH_OBJ);
+    return $result[0];
+}
+
     public function getTestSessions()
     {
       $stmt = $this->connect()->prepare("select testID,settingID,(SELECT name from test t where t.id = r.testID) testName,ts.startTime,ts.endTime,
@@ -114,17 +118,19 @@ class test extends dbh
           return false;
     }
     public function duplicateTest($testID){
-        $stmt = $this->connect()->prepare("INSERT INTO test(name,courseID,instructorID)
-        SELECT concat('Copy of ',name),courseID,instructorID from test where id = :tID;
-        INSERT INTO tests_has_questions(testID,questionID)
-        SELECT (SELECT max(id) from test where instructorID = :instID),questionID from tests_has_questions where testID = :tID;
-        INSERT INTO test_random_questions(testID,courseID,questionsCount,difficulty)
-        SELECT (SELECT max(id) from test where instructorID = :instID),courseID,questionsCount,difficulty from test_random_questions where testID = :tID;");
-        $stmt->bindparam(":instID",$_SESSION['mydata']->id);
-        $stmt->bindparam(":tID",$testID);
+        $stmt = $this->connect()->prepare("INSERT INTO test(name, courseID, instructorID)
+        SELECT CONCAT('Copy of ', name), courseID, instructorID FROM test WHERE id = :tID;
+        
+        INSERT INTO tests_has_questions(testID, questionID)
+        SELECT (SELECT MAX(id) FROM test WHERE instructorID = :instID), questionID 
+        FROM tests_has_questions WHERE testID = :tID;");
+    
+        $stmt->bindparam(":instID", $_SESSION['mydata']->id);
+        $stmt->bindparam(":tID", $testID);
         $stmt->execute();
         return true;
     }
+    
     public function testAverage($testID){
         $stmt = $this->connect()->prepare("select round(avg(getResultGrade(r.id))) AS average from result r where testID = :testID");
         $stmt->bindparam(":testID",$testID);
@@ -163,18 +169,6 @@ class test extends dbh
           AND id NOT IN (SELECT questionID FROM tests_has_questions WHERE testID = :tid)");
         $stmt->bindparam(":tid", $testID);
         $stmt->bindparam(":aid", $_SESSION['mydata']->id);
-        $stmt->execute();
-        $result=$stmt->fetchAll(PDO::FETCH_OBJ);
-        return $result;
-    }
-    public function getRandomRules($testID)
-    {
-        $stmt = $this->connect()->prepare("SELECT (select name from course where id = tq.courseID) as course,questionsCount,difficulty, testID, courseID,
-        (CASE WHEN (SELECT count(*) FROM question q where q.courseID = tq.courseID and q.difficulty = tq.difficulty and q.id NOT IN (SELECT questionID from tests_has_questions WHERE testID = :tid)) < questionsCount THEN
-        1 ELSE 0 END) as validCount
-
-          FROM test_random_questions tq WHERE tq.TestID = :tid");
-        $stmt->bindparam(":tid", $testID);
         $stmt->execute();
         $result=$stmt->fetchAll(PDO::FETCH_OBJ);
         return $result;
@@ -240,21 +234,7 @@ class test extends dbh
 
         $stmt->execute();
     }
-    public function deleteRandomRule($tid,$cid,$diff)
-    {
-      try {
-        $stmt=$this->connect()->prepare("DELETE FROM test_random_questions
-                                        WHERE testID=:tid and courseID =:cid and difficulty =:diff");
-        $stmt->bindparam(":tid", $tid);
-        $stmt->bindparam(":cid", $cid);
-        $stmt->bindparam(":diff", $diff);
-        $stmt->execute();
-      } catch (PDOException $e) {
-          echo $e->getMessage();
-          return false;
-      }
-    }
-
+   
     public function insert($name, $course)
     {
         try {
@@ -263,22 +243,6 @@ class test extends dbh
             $stmt->bindparam(":name", $name);
             $stmt->bindparam(":courseID", $course);
             $stmt->bindparam(":instructorID", $_SESSION['mydata']->id);
-            $stmt->execute();
-            return true;
-        } catch (PDOException $e) {
-            echo $e->getMessage();
-            return false;
-        }
-    }
-    public function addRandomRule($testID, $courseID,$count,$difficulty)
-    {
-        try {
-            $stmt = $this->connect()->prepare("REPLACE INTO test_random_questions(testID,courseID,questionsCount,difficulty)
-                                                              VALUES(:testID,:courseID, :questionsCount,:difficulty)");
-            $stmt->bindparam(":testID", $testID);
-            $stmt->bindparam(":courseID", $courseID);
-            $stmt->bindparam(":questionsCount", $count);
-            $stmt->bindparam(":difficulty", $difficulty);
             $stmt->execute();
             return true;
         } catch (PDOException $e) {

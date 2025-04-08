@@ -90,24 +90,4 @@ else if (isset($_GET['editTest'])){
     $newTest->deleteQuestionsFromTest($tid,$qid);
   }
   header('Location: ' . $_SERVER['HTTP_REFERER']);exit;
-}else if (isset($_GET['deleteRandomRule'])){
-  $tid = !empty($_POST['testID']) ? trim($_POST['testID']) : null;
-  $cid = !empty($_POST['courseID']) ? trim($_POST['courseID']) : null;
-  $diff = !empty($_POST['diff']) ? trim($_POST['diff']) : 1;
-  $newTest = new test();
-  if (($tid != null) && ($cid != null)){
-    $newTest->deleteRandomRule($tid,$cid,$diff);
-  }
-}else if (isset($_GET['addRandomRule'])){
-  $testID = !empty($_POST['testID']) ? trim($_POST['testID']) : null;
-  $courseID = !empty($_POST['courseID']) ? trim($_POST['courseID']) : null;
-  $diff = !empty($_POST['diff']) ? trim($_POST['diff']) : null;
-  $count = !empty($_POST['Count']) ? trim($_POST['Count']) : null;
-  $newTest = new test();
-  if(!$newTest->checkAvailableCount($testID,$courseID,$diff,$count)){
-    echo 'You Don\'t have enought question in this topic';
-  }elseif (($testID != null) && ($courseID != null) && ($count > 0)){
-    $newTest->addRandomRule($testID, $courseID,$count,$diff);
-    echo 'success';
-  }
 }

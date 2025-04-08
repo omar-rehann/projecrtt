@@ -18,21 +18,23 @@ class group extends dbh{
     }
     public function getByID($id){
       $stmt = $this->connect()->prepare("SELECT gp.id, name,
-      (select count(*) from groups_has_students sg where sg.groupID = gp.id) as members,
-      (select name from test where id = gp.assignedTest) as assignedTest,gp.assignedTest testID,
-      (CASE WHEN (convert_tz(now(),@@session.time_zone,'+02:00') BETWEEN ts.startTime AND ts.endTime) THEN
+      (SELECT count(*) FROM groups_has_students sg WHERE sg.groupID = gp.id) as members,
+      (SELECT name FROM test WHERE id = gp.assignedTest) as assignedTest, gp.assignedTest testID,
+      (CASE WHEN (convert_tz(now(), @@session.time_zone, '+02:00') BETWEEN ts.startTime AND ts.endTime) THEN
           1 ELSE 0 END) as isActive,
-      ts.startTime,ts.endTime,ts.duration,ts.random,ts.sendToStudent,ts.releaseResult,ts.passPercent,ts.sendToInstructor,ts.viewAnswers,gp.instructorID as instructor
+      ts.startTime, ts.endTime, ts.duration, ts.sendToStudent, ts.releaseResult, ts.passPercent, ts.sendToInstructor, ts.viewAnswers, gp.instructorID as instructor
       FROM groups gp
       LEFT JOIN test_settings ts
-      on ts.id = gp.settingID
-      where gp.instructorID = :instID and gp.id = :gID");
-            $stmt->bindparam(":gID",$id);
-            $stmt->bindparam(":instID",$_SESSION['mydata']->id);
-            $stmt->execute();
-            $result = $stmt->fetchAll(PDO::FETCH_OBJ);
-            return $result[0];
-    }
+      ON ts.id = gp.settingID
+      WHERE gp.instructorID = :instID AND gp.id = :gID");
+  
+      $stmt->bindparam(":gID", $id);
+      $stmt->bindparam(":instID", $_SESSION['mydata']->id);
+      $stmt->execute();
+      $result = $stmt->fetchAll(PDO::FETCH_OBJ);
+      return $result[0];
+  }
+  
     public function getMembers($id){
         $stmt = $this->connect()->prepare("select id,name,email,phone,(CASE WHEN s.password is null || s.password = '' THEN 0 ELSE 1 END) registered,joinDate from groups_has_students
         inner join student s

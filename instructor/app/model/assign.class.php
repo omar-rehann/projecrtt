@@ -1,22 +1,24 @@
 <?php
 class assign extends dbh{
 
-    public function getTestInvitations($testID){
-        $stmt = $this->connect()->prepare("SELECT ti.id,name,HEX(AES_ENCRYPT(ti.id, 'final')) as invite,ts.startTime,ts.endTime,ts.random,ts.prevQuestion,ts.duration,ts.passPercent,ts.sendToStudent,ts.releaseResult,
-        CASE WHEN ((convert_tz(now(),@@session.time_zone,'+02:00') between ts.startTime AND ts.endTime) and used <= useLimit) THEN 1
-        WHEN ((convert_tz(now(),@@session.time_zone,'+02:00') < ts.startTime) and used <= useLimit) THEN 2
+  public function getTestInvitations($testID){
+    $stmt = $this->connect()->prepare("SELECT ti.id, name, HEX(AES_ENCRYPT(ti.id, 'final')) as invite, ts.startTime, ts.endTime, ts.prevQuestion, ts.duration, ts.passPercent, ts.sendToStudent, ts.releaseResult,
+    CASE 
+        WHEN ((convert_tz(now(), @@session.time_zone, '+02:00') BETWEEN ts.startTime AND ts.endTime) AND used <= useLimit) THEN 1
+        WHEN ((convert_tz(now(), @@session.time_zone, '+02:00') < ts.startTime) AND used <= useLimit) THEN 2
         ELSE 0
-        END as status
-        FROM test_invitations ti
-        inner join test_settings ts
-        ON ti.settingID = ts.id
-        where ti.instructorID = :instID and ti.testID = :testID");
-        $stmt->bindparam(":instID",$_SESSION['mydata']->id);
-        $stmt->bindparam(":testID",$testID);
-        $stmt->execute();
-        $result = $stmt->fetchAll(PDO::FETCH_OBJ);
-        return $result;
-    }
+    END as status
+    FROM test_invitations ti
+    INNER JOIN test_settings ts ON ti.settingID = ts.id
+    WHERE ti.instructorID = :instID AND ti.testID = :testID");
+
+    $stmt->bindparam(":instID", $_SESSION['mydata']->id);
+    $stmt->bindparam(":testID", $testID);
+    $stmt->execute();
+    $result = $stmt->fetchAll(PDO::FETCH_OBJ);
+    return $result;
+}
+
     public function getGroupSettings()
      {
          $stmt = $this->connect()->prepare("SELECT g.`name`,ts.id FROM groups g
@@ -48,32 +50,31 @@ class assign extends dbh{
           else
             return false;
      }
-    public function createSetting($start,$end,$random,$prevQuestion,$duration,$percent,$viewAnswers,$releaseResult,$sendToS,$sendToI){
+     public function createSetting($start, $end, $prevQuestion, $duration, $percent, $viewAnswers, $releaseResult, $sendToS, $sendToI) {
       $this->deleteUnusedSettings();
-      try
-        {
-          $stmt = $this->connect()->prepare("INSERT INTO test_settings(startTime, endTime, duration, random,prevQuestion, viewAnswers,releaseResult, sendToStudent, sendToInstructor, passPercent, instructorID)
-          VALUES (:startTime, :endTime, :duration, :random,:prevQuestion, :viewAnswers,:releaseResult, :sendToStudent, :sendToInstructor, :passPercent, :instructorID);");
-          $stmt->bindparam(":startTime",$start);
-          $stmt->bindparam(":endTime",$end);
-          $stmt->bindparam(":duration",$duration);
-          $stmt->bindparam(":random",$random);
-          $stmt->bindparam(":prevQuestion",$prevQuestion);
-          $stmt->bindparam(":releaseResult",$releaseResult);
-          $stmt->bindparam(":viewAnswers",$viewAnswers);
-          $stmt->bindparam(":sendToStudent",$sendToS);
-          $stmt->bindparam(":sendToInstructor",$sendToI);
-          $stmt->bindparam(":passPercent",$percent);
-          $stmt->bindparam(":instructorID",$_SESSION['mydata']->id);
+      try {
+          $stmt = $this->connect()->prepare("INSERT INTO test_settings(startTime, endTime, duration, prevQuestion, viewAnswers, releaseResult, sendToStudent, sendToInstructor, passPercent, instructorID)
+          VALUES (:startTime, :endTime, :duration, :prevQuestion, :viewAnswers, :releaseResult, :sendToStudent, :sendToInstructor, :passPercent, :instructorID);");
+  
+          $stmt->bindparam(":startTime", $start);
+          $stmt->bindparam(":endTime", $end);
+          $stmt->bindparam(":duration", $duration);
+          $stmt->bindparam(":prevQuestion", $prevQuestion);
+          $stmt->bindparam(":releaseResult", $releaseResult);
+          $stmt->bindparam(":viewAnswers", $viewAnswers);
+          $stmt->bindparam(":sendToStudent", $sendToS);
+          $stmt->bindparam(":sendToInstructor", $sendToI);
+          $stmt->bindparam(":passPercent", $percent);
+          $stmt->bindparam(":instructorID", $_SESSION['mydata']->id);
           $stmt->execute();
+  
           return true;
-        }
-      catch(PDOException $e)
-        {
-           echo $e->getMessage();
-           return false;
-        }
-     }
+      } catch (PDOException $e) {
+          echo $e->getMessage();
+          return false;
+      }
+  }
+  
     public function AssignToGroup($groupID,$testID){
           $stmt = $this->connect()->prepare("UPDATE groups
           SET assignedTest = :testID,
