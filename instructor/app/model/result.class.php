@@ -4,9 +4,9 @@ class Result extends Dbh { // الكلاس يرث من كلاس قاعدة ال�
 
     // دالة لجلب جميع النتائج
     public function getAll() {
-        // تحديد الاستعلام بناءً على صلاحية المستخدم
+        // التحقق إذا كان المستخدم مدير
         if ($_SESSION['mydata']->isAdmin) {
-            // استعلام للمدير
+            // استعلام لجلب جميع النتائج للمدير
             $query = "SELECT r.id, r.testID, t.name AS testName, s.name AS studentName, 
                       r.studentID, r.startTime, r.endTime, 
                       ipaddr, hostname, 
@@ -19,7 +19,7 @@ class Result extends Dbh { // الكلاس يرث من كلاس قاعدة ال�
                       ORDER BY r.endTime DESC";
             $statement = $this->connect()->prepare($query);
         } else {
-            // استعلام للمدرس
+            // استعلام لجلب النتائج للمدرس فقط
             $query = "SELECT r.id, r.testID, t.name AS testName, s.name AS studentName, 
                       r.studentID, r.startTime, r.endTime, 
                       ipaddr, hostname, 
