@@ -159,7 +159,7 @@ $res = new result;
                   </label>
                 </div>
 				<div class="col-6">
-					<label class="control-label mb-1"><strong>Test:  </strong></label>
+					<label class="control-label mb-1"><strong>Name Test:  </strong></label>
 					<label class="control-label mb-1">
 						<?php echo $result->testName ?>
 					</label>
