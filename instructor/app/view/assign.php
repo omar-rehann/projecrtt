@@ -156,7 +156,7 @@ if (isset($_GET['test']) && is_numeric($_GET['test'])) {
                             <label for="percent" class=" form-control-label">Test Pass Percent </label>
                         </div>
                         <div class="col-8">
-                            <input type="number" name="percent" id="percent" min="1" max="100" placeholder="Pass Percent..." class="form-control" value="<?php echo $setting->passPercent ?>" required>
+                            <input type="number" name="percent" id="percent" min="1" max="100" placeholder="Pass Percent..." class="form-control bg-dark text-light" value="<?php echo $setting->passPercent ?>" required>
                         </div>
                     </div>
                     <div class="row form-group">
