@@ -26,7 +26,6 @@ public function getDeleted()
     (SELECT name FROM course WHERE id = courseID) as course,
     (SELECT count(*) FROM tests_has_questions WHERE testID = t.id) as fixedQuestions,
     (SELECT count(*) FROM result WHERE testID = t.id) as inResults,
-    (SELECT count(*) FROM test_invitations WHERE testID = t.id) links,
     (SELECT count(*) FROM groups WHERE assignedTest = t.id) inGroups
     FROM test t WHERE instructorID = :aid AND deleted");
 
