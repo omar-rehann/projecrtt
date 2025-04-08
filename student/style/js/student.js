@@ -165,36 +165,6 @@ $("#StartTest").click(function(e) {
     });
 });
 
-function submitAnswers() {
-    var url = 'app/controller/test.inc.php?action=submitAnswers';
-    var posting = $.post(url, {
-        questions: JSON.parse(atob(localStorage.getItem('data')))
-    });
-    posting.done(function(msg) {
-        if (msg == 'success') {
-            Swal.fire({
-                position: 'center',
-                icon: 'success',
-                title: 'Submitting Your Answers',
-                timerProgressBar: true,
-                showConfirmButton: false,
-                timer: 1000,
-                onClose: () => {
-                    $(location).attr('href', '?results&id=Last');
-                }
-            })
-            localStorage.clear();
-        } else {
-            console.log(posting);
-            Swal.fire({
-                icon: 'error',
-                title: 'Something Went Wrong...',
-                text: msg,
-            })
-        }
-
-    });
-}
 $("#checkIDForm").submit(function(e) {
     e.preventDefault();
     var form = $(this);
@@ -257,3 +227,34 @@ $(".leaveGroupbtn").click(function(e) {
         }
     })
 });
+
+function submitAnswers() {
+    var url = 'app/controller/test.inc.php?action=submitAnswers';
+    var posting = $.post(url, {
+        questions: JSON.parse(atob(localStorage.getItem('data')))
+    });
+    posting.done(function(msg) {
+        if (msg == 'success') {
+            Swal.fire({
+                position: 'center',
+                icon: 'success',
+                title: 'Submitting Your Answers',
+                timerProgressBar: true,
+                showConfirmButton: false,
+                timer: 1000,
+                onClose: () => {
+                    $(location).attr('href', '?results&id=Last');
+                }
+            })
+            localStorage.clear();
+        } else {
+            console.log(posting);
+            Swal.fire({
+                icon: 'error',
+                title: 'Something Went Wrong...',
+                text: msg,
+            })
+        }
+
+    });
+}

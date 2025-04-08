@@ -1,68 +1,96 @@
 <?php
 
-class student extends dbh{
+class Student extends Dbh { // الكلاس يرث من كلاس قاعدة البيانات Dbh
 
-  public function getMyStudents(){
-      $stmt = $this->connect()->prepare("SELECT DISTINCT s.id,s.`name`,s.email,s.phone,s.suspended from result r
-                    inner join student s
-                    on r.studentID = s.id
-                    inner join test t
-                    on t.id = r.testID AND t.instructorID = :instID");
-      $stmt->bindparam(":instID",$_SESSION['mydata']->id);
-      $stmt->execute();
-      $result = $stmt->fetchAll(PDO::FETCH_OBJ);
-      return $result;
-  }
-  public function getAllIDs(){
-      $stmt = $this->connect()->prepare("SELECT id from student");
-      $stmt->execute();
-      $result = $stmt->fetchAll(PDO::FETCH_OBJ);
-      return $result;
-  }
-  public function getUnregistered(){
-      $stmt = $this->connect()->prepare("SELECT * from student where password IS NULL");
-      $stmt->execute();
-      $result = $stmt->fetchAll(PDO::FETCH_OBJ);
-      return $result;
-  }
-  public function getStudentResults($studentID){
-        $stmt = $this->connect()->prepare("SELECT r.id,r.testID,t.name AS testName,s.name AS studentName,r.studentID,r.startTime,r.endTime,
-                             (select name from student where id = r.studentID) AS student,ipaddr,hostname,
-                                getResultGrade(r.id) AS FinalGrade,
-                                getResultMaxGrade(r.id) TestDegree
-                                 FROM result r
-                                 INNER JOIN test t
-                                    ON t.id = r.testID and t.instructorID = :instID
-                                 INNER JOIN student s
-                                    ON s.id = r.studentID
-                                 WHERE r.studentID = :studentID and !r.isTemp
-                                 group by t.id, r.id
-                                 order by r.endTime DESC;");
-        $stmt->bindparam(":instID",$_SESSION['mydata']->id);
-        $stmt->bindparam(":studentID",$studentID);
-        $stmt->execute();
-        $result=$stmt->fetchAll(PDO::FETCH_OBJ);
-        return $result;
-  }
-  public function addStudents($students)
-  {
-      try {
-          $sql = 'INSERT IGNORE INTO student(id) VALUES';
-          foreach($students as $studentID)
-          $sql .= ' ('. $studentID . '),';
-          $sql = rtrim($sql,',');
-          $stmt = $this->connect()->prepare($sql);
-          $stmt->execute();
-          return true;
-      } catch (PDOException $e) {
-          echo $e->getMessage();
-          return false;
-      }
-  }
-  public function deleteStudent($id){
-      $stmt = $this->connect()->prepare("DELETE FROM student where id = :id");
-      $stmt->bindparam(":id",$id);
-      $stmt->execute();
-  }
+    // دالة لجلب طلاب المدرس
+    public function getMyStudents() {
+        // استعلام لجلب الطلاب الذين لهم نتائج اختبارات مع المدرس الحالي
+        $query = "SELECT DISTINCT s.id, s.name, s.email, s.phone, s.suspended 
+                  FROM result r
+                  INNER JOIN student s ON r.studentID = s.id
+                  INNER JOIN test t ON t.id = r.testID AND t.instructorID = :instID";
+        
+        $statement = $this->connect()->prepare($query); // تحضير الاستعلام
+        $statement->bindParam(":instID", $_SESSION['mydata']->id); // ربط معرف المدرس
+        $statement->execute(); // تنفيذ الاستعلام
+        $results = $statement->fetchAll(PDO::FETCH_OBJ); // جلب النتائج ككائنات
+        return $results; // إرجاع النتائج
+    }
 
+    // دالة لجلب جميع معرفات الطلاب
+    public function getAllIDs() {
+        // استعلام بسيط جدًا لجلب معرفات الطلاب فقط
+        $query = "SELECT id FROM student";
+        
+        $statement = $this->connect()->prepare($query); // تحضير الاستعلام
+        $statement->execute(); // تنفيذ الاستعلام
+        $results = $statement->fetchAll(PDO::FETCH_OBJ); // جلب النتائج
+        return $results; // إرجاع النتائج
+    }
+
+    // دالة لجلب الطلاب غير المسجلين
+    public function getUnregistered() {
+        // استعلام لجلب الطلاب الذين لم يسجلوا (كلمة المرور فارغة)
+        $query = "SELECT * FROM student WHERE password IS NULL";
+        
+        $statement = $this->connect()->prepare($query); // تحضير الاستعلام
+        $statement->execute(); // تنفيذ الاستعلام
+        $results = $statement->fetchAll(PDO::FETCH_OBJ); // جلب النتائج
+        return $results; // إرجاع النتائج
+    }
+
+    // دالة لجلب نتائج طالب معين
+    public function getStudentResults($studentID) {
+        // استعلام لجلب نتائج الطالب في اختبارات المدرس الحالي
+        $query = "SELECT r.id, r.testID, t.name AS testName, s.name AS studentName, 
+                  r.studentID, r.startTime, r.endTime,
+                  (SELECT name FROM student WHERE id = r.studentID) AS student, 
+                  ipaddr, hostname,
+                  getResultGrade(r.id) AS FinalGrade,
+                  getResultMaxGrade(r.id) AS TestDegree
+                  FROM result r
+                  INNER JOIN test t ON t.id = r.testID AND t.instructorID = :instID
+                  INNER JOIN student s ON s.id = r.studentID
+                  WHERE r.studentID = :studentID AND !r.isTemp
+                  GROUP BY t.id, r.id
+                  ORDER BY r.endTime DESC";
+        
+        $statement = $this->connect()->prepare($query); // تحضير الاستعلام
+        $statement->bindParam(":instID", $_SESSION['mydata']->id); // ربط معرف المدرس
+        $statement->bindParam(":studentID", $studentID); // ربط معرف الطالب
+        $statement->execute(); // تنفيذ الاستعلام
+        $results = $statement->fetchAll(PDO::FETCH_OBJ); // جلب النتائج
+        return $results; // إرجاع النتائج
+    }
+
+    // دالة لإضافة طلاب جدد
+    public function addStudents($students) {
+        try {
+            // بناء استعلام لإضافة الطلاب مع تجاهل التكرارات
+            $query = 'INSERT IGNORE INTO student(id) VALUES';
+            foreach ($students as $studentID) {
+                $query .= ' (' . $studentID . '),'; // إضافة كل معرف طالب
+            }
+            $query = rtrim($query, ','); // إزالة الفاصلة الأخيرة
+            
+            $statement = $this->connect()->prepare($query); // تحضير الاستعلام
+            $statement->execute(); // تنفيذ الاستعلام
+            return true; // إرجاع نجاح العملية
+        } catch (PDOException $error) {
+            echo $error->getMessage(); // عرض رسالة الخطأ إذا حدث
+            return false; // إرجاع فشل العملية
+        }
+    }
+
+    // دالة لحذف طالب
+    public function deleteStudent($studentID) {
+        // استعلام لحذف طالب بناءً على المعرف
+        $query = "DELETE FROM student WHERE id = :id";
+        
+        $statement = $this->connect()->prepare($query); // تحضير الاستعلام
+        $statement->bindParam(":id", $studentID); // ربط معرف الطالب
+        $statement->execute(); // تنفيذ الاستعلام
+    }
 }
+
+?>

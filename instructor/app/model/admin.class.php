@@ -1,95 +1,120 @@
 <?php
 
-class admin extends dbh{
-  public function getAllInstructors(){
-      $stmt = $this->connect()->query("SELECT * FROM instructor where !isAdmin");
-      $result = $stmt->fetchAll(PDO::FETCH_OBJ);
-      return $result;
+class admin extends dbh {
+  
+  // الحصول على جميع المدربين ( Only Admin)
+  public function getAllInstructors() {
+    $db = $this->connect();
+    $query = "SELECT * FROM instructor WHERE !isAdmin";
+    $result = $db->query($query);
+    return $result->fetchAll(PDO::FETCH_OBJ);
   }
-  public function getAllStudents(){
-      $stmt = $this->connect()->query("SELECT * FROM student");
-      $result = $stmt->fetchAll(PDO::FETCH_OBJ);
-      return $result;
+  
+  // الحصول على جميع الطلاب
+  public function getAllStudents() {
+    $db = $this->connect();
+    $query = "SELECT * FROM student";
+    $result = $db->query($query);
+    return $result->fetchAll(PDO::FETCH_OBJ);
   }
-  public function getUnregistered(){
-      $stmt = $this->connect()->query("SELECT * FROM student WHERE password is null");
-      $result = $stmt->fetchAll(PDO::FETCH_OBJ);
-      return $result;
+  
+  // الحصول على الطلاب غير المسجلين (بدون كلمة مرور)
+  public function getUnregistered() {
+    $db = $this->connect();
+    $query = "SELECT * FROM student WHERE password IS NULL";
+    $result = $db->query($query);
+    return $result->fetchAll(PDO::FETCH_OBJ);
   }
-  public function getStudentResults($studentID){
-        $stmt = $this->connect()->prepare("SELECT r.id,r.testID,t.name AS testName,s.name AS studentName,r.studentID,r.startTime,r.endTime,
-                             (select name from student where id = r.studentID) AS student,ipaddr,hostname,
-                                getResultGrade(r.id) AS FinalGrade,
-                                getResultMaxGrade(r.id) TestDegree
-                                 FROM result r
-                                 INNER JOIN test t
-                                    ON t.id = r.testID
-                                 INNER JOIN student s
-                                    ON s.id = r.studentID
-                                 WHERE r.studentID = :studentID and !r.isTemp
-                                 group by t.id, r.id
-                                 order by r.endTime DESC;");
-        $stmt->bindparam(":studentID",$studentID);
-        $stmt->execute();
-        $result=$stmt->fetchAll(PDO::FETCH_OBJ);
-        return $result;
+  
+  // الحصول على نتائج طالب معين
+  public function getStudentResults($studentID) {
+    $db = $this->connect();
+    $query = "SELECT r.id, r.testID, t.name AS testName, s.name AS studentName, 
+                     r.studentID, r.startTime, r.endTime,
+                     (SELECT name FROM student WHERE id = r.studentID) AS student,
+                     ipaddr, hostname,
+                     getResultGrade(r.id) AS FinalGrade,
+                     getResultMaxGrade(r.id) AS TestDegree
+              FROM result r
+              JOIN test t ON t.id = r.testID
+              JOIN student s ON s.id = r.studentID
+              WHERE r.studentID = ? AND !r.isTemp
+              GROUP BY t.id, r.id
+              ORDER BY r.endTime DESC";
+    
+    $stmt = $db->prepare($query);
+    $stmt->execute([$studentID]);
+    return $stmt->fetchAll(PDO::FETCH_OBJ);
   }
-  public function suspendStudent($studentID){
-      $stmt = $this->connect()->prepare("UPDATE student SET suspended = 1,sessionID = NULL where id = :studentID");
-      $stmt->bindparam(":studentID",$studentID);
-      $stmt->execute();
+  
+  //   Susspendd Student
+  public function suspendStudent($studentID) {
+    $db = $this->connect();
+    $query = "UPDATE student SET suspended = 1, sessionID = NULL WHERE id = ?";
+    $stmt = $db->prepare($query);
+    $stmt->execute([$studentID]);
+    return true;
+  }
+  
+  //  Activity Student
+  public function activateStudent($studentID) {
+    $db = $this->connect();
+    $query = "UPDATE student SET suspended = 0 WHERE id = ?";
+    $stmt = $db->prepare($query);
+    $stmt->execute([$studentID]);
+    return true;
+  }
+  
+  //  Susspend Instructor
+  public function suspendInstructor($instructorID) {
+    $db = $this->connect();
+    $query = "UPDATE instructor SET suspended = 1 WHERE id = ?";
+    $stmt = $db->prepare($query);
+    $stmt->execute([$instructorID]);
+    return true;
+  }
+  
+  //  Activity Instructor
+  public function activateInstructor($instructorID) {
+    $db = $this->connect();
+    $query = "UPDATE instructor SET suspended = 0 WHERE id = ?";
+    $stmt = $db->prepare($query);
+    $stmt->execute([$instructorID]);
+    return true;
+  }
+  
+  //    Import student
+  public function importStudents($values) {
+    try {
+      $db = $this->connect();
+      $query = "INSERT IGNORE INTO student(id, name, email, phone, password) VALUES " . $values;
+      $db->exec($query);
       return true;
+    } catch (Exception $e) {
+      error_log("Error importing students: " . $e->getMessage());
+      return false;
+    }
   }
-  public function activateStudent($studentID){
-      $stmt = $this->connect()->prepare("UPDATE student SET suspended = 0 where id = :studentID");
-      $stmt->bindparam(":studentID",$studentID);
-      $stmt->execute();
+  
+  //   Add Student
+  public function addStudent($id, $name, $email, $phone, $password) {
+    try {
+      $db = $this->connect();
+      $query = "INSERT INTO student(id, name, email, phone, password) VALUES (?, ?, ?, ?, ?)";
+      $stmt = $db->prepare($query);
+      $stmt->execute([$id, $name, $email, $phone, $password]);
       return true;
+    } catch (Exception $e) {
+      error_log("Error adding student: " . $e->getMessage());
+      return false;
+    }
   }
-  public function suspendInstructor($instructorID){
-      $stmt = $this->connect()->prepare("UPDATE instructor SET suspended = 1 where id = :instructorID");
-      $stmt->bindparam(":instructorID",$instructorID);
-      $stmt->execute();
-      return true;
-  }
-  public function activateInstructor($instructorID){
-      $stmt = $this->connect()->prepare("UPDATE instructor SET suspended = 0 where id = :instructorID");
-      $stmt->bindparam(":instructorID",$instructorID);
-      $stmt->execute();
-      return true;
-  }
-  public function importStudents($values)
-  {
-      try {
-          $sql = "INSERT IGNORE student(id,name,email,phone,password) VALUES " . $values;
-          $stmt = $this->connect()->prepare($sql);
-          $stmt->execute();
-          return true;
-      } catch (PDOException $e) {
-          echo $e->getMessage();
-          return false;
-      }
-  }
-  public function addStudent($id, $name, $email, $phone, $password)
-  {
-      try {
-          $sql = "INSERT INTO student(id, name, email, phone, password) VALUES(:id, :name, :email, :phone, :password)";
-          $stmt = $this->connect()->prepare($sql);
-          $stmt->bindparam(":id",$id);
-          $stmt->bindparam(":name",$name);
-          $stmt->bindparam(":email",$email);
-          $stmt->bindparam(":phone",$phone);
-          $stmt->bindparam(":password",$password);
-          $stmt->execute();
-          return true;
-      } catch (PDOException $e) {
-          echo $e->getMessage();
-          return false;
-      }
-  }
-  public function getUnsentMails(){
-      $stmt = $this->connect()->query("SELECT * FROM mails where !sent");
-      $result = $stmt->fetchAll(PDO::FETCH_OBJ);
-      return $result;
+  
+  // الحصول على الرسائل غير المرسلة
+  public function getUnsentMails() {
+    $db = $this->connect();
+    $query = "SELECT * FROM mails WHERE !sent";
+    $result = $db->query($query);
+    return $result->fetchAll(PDO::FETCH_OBJ);
   }
 }

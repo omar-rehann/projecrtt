@@ -18,16 +18,11 @@ if ($_GET['action'] == 'getQuestions'){
     echo 'You have already taken this test';
   }elseif($_test->checkActiveTest() != 0){
     echo 'You have an active test.., You can\'t take more then one test at the same time';
-  }else{
-  $_test->InitiateTest();
-  if($_SESSION['CurrentTest']->random == 1){
-      $_test->InitiateFixed_Random();
   }else {
-      $_test->InitiateFixed();
-  }
-  $_test->InitiateRandoms();
-  echo 'success';
-  }
+    $_test->InitiateTest(); // بدء الاختبار
+    $_test->InitiateFixed(); // تهيئة الاختبار بالأسئلة الثابتة فقط
+    echo 'success'; // طباعة رسالة النجاح
+}
 }else if ($_GET['action'] == 'submitAnswers'){
   $_student = new student;
   if(empty($_POST['questions'])){

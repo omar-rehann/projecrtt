@@ -2,113 +2,114 @@
 
 class course extends dbh
 {
+    // الحصول على جميع المواد الرئيسية
     public function getAllParents()
     {
-        $stmt = $this->connect()->prepare("
-      select id,name,parent,instructorID,
-      (select count(*) from question where courseID = c.id and !deleted) as questions,
-      (select count(*) from course where parent = c.id) as childs,
-      (select count(*) from test where courseID = c.id) as tests
-      from course c where instructorID = :aid and parent IS NULL;");
-      $stmt->bindparam(":aid",$_SESSION['mydata']->id);
-      $stmt->execute();
-      $result=$stmt->fetchAll(PDO::FETCH_OBJ);
-        return $result;
+        $db = $this->connect();
+        $query = "SELECT id, name, parent, instructorID,
+                 (SELECT COUNT(*) FROM question WHERE courseID = c.id AND !deleted) AS questions,
+                 (SELECT COUNT(*) FROM course WHERE parent = c.id) AS childs,
+                 (SELECT COUNT(*) FROM test WHERE courseID = c.id) AS tests
+                 FROM course c 
+                 WHERE instructorID = ? AND parent IS NULL";
+        
+        $stmt = $db->prepare($query);
+        $stmt->execute([$_SESSION['mydata']->id]);
+        return $stmt->fetchAll(PDO::FETCH_OBJ);
     }
+
+    // الحصول على جميع الموضوعات الفرعية
     public function getAllChilds($parentid)
     {
-        $stmt = $this->connect()->prepare("
-        select id,name,parent,instructorID,
-        (select count(*) from question where courseID = c.id and !deleted) as questions,
-        (select count(*) from test where courseID = c.id) as tests
-        from course c where instructorID = :aid and parent = :prt;");
-        $stmt->bindparam(":prt",$parentid);
-        $stmt->bindparam(":aid",$_SESSION['mydata']->id);
-        $stmt->execute();
-        $result=$stmt->fetchAll(PDO::FETCH_OBJ);
-        return $result;
+        $db = $this->connect();
+        $query = "SELECT id, name, parent, instructorID,
+                 (SELECT COUNT(*) FROM question WHERE courseID = c.id AND !deleted) AS questions,
+                 (SELECT COUNT(*) FROM test WHERE courseID = c.id) AS tests
+                 FROM course c 
+                 WHERE instructorID = ? AND parent = ?";
+        
+        $stmt = $db->prepare($query);
+        $stmt->execute([$_SESSION['mydata']->id, $parentid]);
+        return $stmt->fetchAll(PDO::FETCH_OBJ);
     }
-    public function noCourses(){
-        $stmt = $this->connect()->prepare("SELECT id FROM course where instructorID = :aid and parent IS NOT NULL ");
-        $stmt->bindparam(":aid",$_SESSION['mydata']->id);
-        $stmt->execute();
-        $result=$stmt->rowCount();
-        if($result == 0){
-                return true;
-        }else{
-                return false;
-        }
-      }
-    public function delete($cid){
-      $stmt=$this->connect()->prepare("DELETE FROM course
-                                        WHERE id=:cid and instructorID = :aid ");
-      $stmt->bindparam(":cid",$cid);
-      $stmt->bindparam(":aid",$_SESSION['mydata']->id);
 
-      $stmt->execute();
+    // التحقق من عدم وجود موضوعات فرعية
+    public function noCourses()
+    {
+        $db = $this->connect();
+        $query = "SELECT id FROM course WHERE instructorID = ? AND parent IS NOT NULL";
+        
+        $stmt = $db->prepare($query);
+        $stmt->execute([$_SESSION['mydata']->id]);
+        return $stmt->rowCount() == 0;
     }
-    public function insert($name,$course)
-     {
-      try
-        {
-           $stmt = $this->connect()->prepare("INSERT INTO course(name,parent,instructorID)
-                                              VALUES(:name,:parent, :instructorID)");
-           $stmt->bindparam(":name",$name);
-           $stmt->bindparam(":parent",$course);
-           $stmt->bindparam(":instructorID",$_SESSION['mydata']->id);
-           $stmt->execute();
-           return true;
-        }
-      catch(PDOException $e)
-        {
-           echo $e->getMessage();
-           return false;
-        }
-     }
-     public function update($id,$name,$parent)
-      {
-       try
-         {
-            $stmt = $this->connect()->prepare("UPDATE course SET name = :name,parent = :parent where id = :id;");
-            $stmt->bindparam(":name",$name);
-            $stmt->bindparam(":parent",$parent);
-            $stmt->bindparam(":id",$id);
-            $stmt->execute();
+
+    // حذف مادة / موضوع
+    public function delete($cid)
+    {
+        $db = $this->connect();
+        $query = "DELETE FROM course WHERE id = ? AND instructorID = ?";
+        
+        $stmt = $db->prepare($query);
+        $stmt->execute([$cid, $_SESSION['mydata']->id]);
+    }
+
+    // إضافة مادة / موضوع جديد
+    public function insert($name, $course)
+    {
+        try {
+            $db = $this->connect();
+            $query = "INSERT INTO course(name, parent, instructorID) VALUES (?, ?, ?)";
+            
+            $stmt = $db->prepare($query);
+            $stmt->execute([$name, $course, $_SESSION['mydata']->id]);
             return true;
-         }
-       catch(PDOException $e)
-         {
-            echo $e->getMessage();
+        } catch (PDOException $e) {
+            error_log("Error inserting course: " . $e->getMessage());
             return false;
-         }
-      }
-      public function checkName($name,$parent){
-          $stmt = $this->connect()->prepare("SELECT * FROM course
-                                            WHERE name= :name
-                                            and (parent= :parent or ISNULL(parent))
-                                            and instructorID = :aid");
-          $stmt->bindparam(":name",$name);
-          $stmt->bindparam(":parent",$parent);
-          $stmt->bindparam(":aid",$_SESSION['mydata']->id);
-          $stmt->execute();
-          $result = $stmt->fetchColumn();
-          if($result > 0){
-                  return true;
-          }else{
-                  return false;
-          }
+        }
+    }
 
-      }
-      public function TopicsExists(){
-          $stmt = $this->connect()->prepare("SELECT count(*) count from course where parent IS NOT NULL and instructorID = :instructorID");
-          $stmt->bindparam(":instructorID",$_SESSION['mydata']->id);
-          $stmt->execute();
-          $result=$stmt->fetchAll(PDO::FETCH_OBJ);
-          if($result[0]->count > 0){
-                  return true;
-          }else{
-                  return false;
-          }
-      }
+    // تحديث بيانات مادة/ موضوع
+    public function update($id, $name, $parent)
+    {
+        try {
+            $db = $this->connect();
+            $query = "UPDATE course SET name = ?, parent = ? WHERE id = ?";
+            
+            $stmt = $db->prepare($query);
+            $stmt->execute([$name, $parent, $id]);
+            return true;
+        } catch (PDOException $e) {
+            error_log("Error updating course: " . $e->getMessage());
+            return false;
+        }
+    }
 
+    // التحقق من وجود اسم مادة/موضوع
+    public function checkName($name, $parent)
+    {
+        $db = $this->connect();
+        $query = "SELECT * FROM course
+                  WHERE name = ?
+                  AND (parent = ? OR ISNULL(parent))
+                  AND instructorID = ?";
+        
+        $stmt = $db->prepare($query);
+        $stmt->execute([$name, $parent, $_SESSION['mydata']->id]);
+        return $stmt->fetchColumn() > 0;
+    }
+
+    // التحقق من وجود موضوعات فرعية
+    public function TopicsExists()
+    {
+        $db = $this->connect();
+        $query = "SELECT COUNT(*) AS count FROM course 
+                  WHERE parent IS NOT NULL AND instructorID = ?";
+        
+        $stmt = $db->prepare($query);
+        $stmt->execute([$_SESSION['mydata']->id]);
+        $result = $stmt->fetch(PDO::FETCH_OBJ);
+        return $result->count > 0;
+    }
 }
