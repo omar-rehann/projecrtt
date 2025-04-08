@@ -8,8 +8,6 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 
-
-
 if (isset($_GET['uploadImage'])) {
   $up = uploadFile($_FILES['file']['tmp_name']);
   echo '../style/images/uploads/' . $up . '.jpg';
@@ -143,115 +141,163 @@ if (isset($_GET['uploadImage'])) {
         header('Location:../../?questions=view&id='. $newID);
 }else if (isset($_GET['export'])) {
     try {
-        ob_end_clean(); // Clear any previous output
+        // تفريغ أي مخرجات سابقة
+        ob_end_clean();
 
-        // Check if the course name is provided
+        // التحقق من وجود اسم المقرر الدراسي
         if (!isset($_POST['course']) || empty($_POST['course'])) {
-            throw new Exception("Course not specified.");
+            die("خطأ: لم يتم تحديد المقرر الدراسي.");
         }
 
-        $course = $_POST['course'];
-        $q = new question; 
-        $questions = $q->getByCourse($course);
+        $courseName = $_POST['course']; // اسم المقرر الدراسي
 
-        if (empty($questions)) {
-            throw new Exception("No questions found for this course.");
+        // إنشاء كائن للتعامل مع الأسئلة
+        $questionObject = new question();
+        $questionsList = $questionObject->getByCourse($courseName); // جلب الأسئلة حسب المقرر
+
+        // التحقق من وجود أسئلة
+        if (empty($questionsList)) {
+            die("خطأ: لا توجد أسئلة لهذا المقرر.");
         }
 
-        $qTypes = [
-            0 => 'Multiple Choice', 1 => 'True/False', 2 => 'Complete',
-            3 => 'Multiple Select', 4 => 'Matching', 5 => 'Essay'
+        // تعريف أنواع الأسئلة
+        $questionTypes = [
+            0 => 'Multiple Choice', // اختيار متعدد
+            1 => 'True/False',      // صح أو خطأ
+            2 => 'Complete',        // تكميل
+            3 => 'Multiple Select', // اختيار متعدد الإجابات
+            4 => 'Matching',        // مطابقة
+            5 => 'Essay'            // مقالي
         ];
 
-        $data = [];
-        foreach ($questions as $question) {
-            $id = $question->id;
-            $quest = strip_tags($question->question);
-            $type = $question->type;
-            $difficulty = $question->difficulty;
-            $typetext = $qTypes[$type];
-            $points = $question->points;
-            $isTrue = $question->isTrue;
+        // إعداد مصفوفة لتخزين بيانات الأسئلة
+        $exportData = [];
 
-            $answers = $q->getQuestionAnswers($id);
-            $ans1 = $answers[0]->answer ?? '';
-            $ans2 = $answers[1]->answer ?? '';
-            $ans3 = $answers[2]->answer ?? '';
-            $ans4 = $answers[3]->answer ?? '';
+        // معالجة كل سؤال من الأسئلة
+        foreach ($questionsList as $question) {
+            $questionID = $question->id; // معرف السؤال
 
-            if ($type == 0 || $type == 3) { // Multiple Choice & Multiple Select
-                $ans1 = ($answers[0]->isCorrect ?? false) ? "#!$ans1" : $ans1;
-                $ans2 = ($answers[1]->isCorrect ?? false) ? "#!$ans2" : $ans2;
-                $ans3 = ($answers[2]->isCorrect ?? false) ? "#!$ans3" : $ans3;
-                $ans4 = ($answers[3]->isCorrect ?? false) ? "#!$ans4" : $ans4;
-            } elseif ($type == 4) { // Matching
-                $ans1 = isset($answers[0]) ? "{$answers[0]->answer} >> {$answers[0]->matchAnswer}" : '';
-                $ans2 = isset($answers[1]) ? "{$answers[1]->answer} >> {$answers[1]->matchAnswer}" : '';
-                $ans3 = isset($answers[2]) ? "{$answers[2]->answer} >> {$answers[2]->matchAnswer}" : '';
-                $ans4 = isset($answers[3]) ? "{$answers[3]->answer} >> {$answers[3]->matchAnswer}" : '';
-            } elseif ($type == 1) { // True/False
-                $ans1 = ($isTrue == 1) ? 'True' : 'False';
-                $ans2 = $ans3 = $ans4 = '';
-            } elseif ($type == 5) { // Essay
-                $ans1 = $ans2 = $ans3 = $ans4 = '';
+            // تنظيف نص السؤال من علامات HTML و #! والمسافات الزائدة
+            $questionText = strip_tags($question->question); // إزالة علامات HTML مثل <p>
+            $questionText = str_replace('#!', '', $questionText); // إزالة #!
+            $questionText = str_replace("\xc2\xa0", ' ', $questionText); // استبدال المسافة غير المرئية بمسافة عادية
+            $questionText = trim($questionText); // إزالة جميع المسافات الزائدة
+
+            $typeID = $question->type; // نوع السؤال (رقم)
+            $typeText = $questionTypes[$typeID]; // اسم نوع السؤال
+            $points = $question->points; // النقاط
+            $difficulty = $question->difficulty; // مستوى الصعوبة
+            $isTrue = $question->isTrue; // للأسئلة من نوع صح/خطأ
+
+            // جلب الإجابات للسؤال
+            $answersList = $questionObject->getQuestionAnswers($questionID);
+
+            // تعيين الإجابات (حتى 4 إجابات كحد أقصى) مع تنظيف النصوص
+            $answer1 = isset($answersList[0]) ? trim(str_replace("\xc2\xa0", ' ', str_replace('#!', '', strip_tags($answersList[0]->answer)))) : '';
+            $answer2 = isset($answersList[1]) ? trim(str_replace("\xc2\xa0", ' ', str_replace('#!', '', strip_tags($answersList[1]->answer)))) : '';
+            $answer3 = isset($answersList[2]) ? trim(str_replace("\xc2\xa0", ' ', str_replace('#!', '', strip_tags($answersList[2]->answer)))) : '';
+            $answer4 = isset($answersList[3]) ? trim(str_replace("\xc2\xa0", ' ', str_replace('#!', '', strip_tags($answersList[3]->answer)))) : '';
+
+            // تنسيق الإجابات حسب نوع السؤال (بدون إضافة #!)
+            if ($typeID == 0 || $typeID == 3) { // اختيار متعدد أو متعدد الإجابات
+                // النص نظيف بالفعل
+            } elseif ($typeID == 4) { // مطابقة
+                $answer1 = isset($answersList[0]) ? trim($answersList[0]->answer) . " >> " . trim($answersList[0]->matchAnswer) : '';
+                $answer2 = isset($answersList[1]) ? trim($answersList[1]->answer) . " >> " . trim($answersList[1]->matchAnswer) : '';
+                $answer3 = isset($answersList[2]) ? trim($answersList[2]->answer) . " >> " . trim($answersList[2]->matchAnswer) : '';
+                $answer4 = isset($answersList[3]) ? trim($answersList[3]->answer) . " >> " . trim($answersList[3]->matchAnswer) : '';
+            } elseif ($typeID == 1) { // صح/خطأ
+                $answer1 = ($isTrue == 1) ? 'True' : 'False';
+                $answer2 = '';
+                $answer3 = '';
+                $answer4 = '';
+            } elseif ($typeID == 5) { // مقالي
+                $answer1 = '';
+                $answer2 = '';
+                $answer3 = '';
+                $answer4 = '';
             }
 
-            $data[] = [$quest, $typetext, $points, $difficulty, $ans1, $ans2, $ans3, $ans4];
+            // إضافة السؤال وإجاباته إلى المصفوفة
+            $exportData[] = [$questionText, $typeText, $points, $difficulty, $answer1, $answer2, $answer3, $answer4];
         }
 
-        // Create a new Excel file
-        $spreadsheet = new Spreadsheet();
-        $sheet = $spreadsheet->getActiveSheet();
+        // إنشاء ملف Excel جديد
+        $excelFile = new Spreadsheet();
+        $sheet = $excelFile->getActiveSheet();
 
-        // Add headers
-        $headers = ['Question', 'Question Type', 'Points', 'Difficulty', 'Answer 1', 'Answer 2', 'Answer 3', 'Answer 4'];
-        $col = 'A';
-        foreach ($headers as $header) {
-            $sheet->setCellValue($col . '1', $header);
-            $col++;
+        // إضافة العناوين في الصف الأول
+        $headers = ['السؤال', 'نوع السؤال', 'النقاط', 'الصعوبة', 'الإجابة 1', 'الإجابة 2', 'الإجابة 3', 'الإجابة 4'];
+        $column = 'A';
+        foreach ($headers as $headerText) {
+            $sheet->setCellValue($column . '1', $headerText);
+            $column++;
         }
 
-        // Style headers
+        // تنسيق العناوين: لون خلفية أزرق غامق وخط أبيض عريض
         $headerStyle = [
-            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
-            'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['rgb' => '4472C4']]
+            'font' => [
+                'bold' => true, // خط عريض
+                'color' => ['rgb' => 'FFFFFF'] // لون الخط أبيض
+            ],
+            'fill' => [
+                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                'startColor' => ['rgb' => '4472C4'] // لون خلفية أزرق غامق
+            ],
+            'alignment' => [
+                'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER // محاذاة مركزية
+            ]
         ];
         $sheet->getStyle('A1:H1')->applyFromArray($headerStyle);
 
-        // Add data
-        $row = 2;
-        foreach ($data as $dataRow) {
-            $col = 'A';
-            foreach ($dataRow as $cell) {
-                $sheet->setCellValue($col . $row, $cell);
-                $col++;
+        // إضافة البيانات إلى الملف مع تنسيق الصفوف
+        $rowNumber = 2; // بدء الكتابة من الصف الثاني
+        foreach ($exportData as $dataRow) {
+            $column = 'A';
+            foreach ($dataRow as $cellValue) {
+                $sheet->setCellValue($column . $rowNumber, $cellValue);
+                $column++;
             }
 
-            // Alternate row styling
-            if ($row % 2 == 0) {
-                $sheet->getStyle("A$row:H$row")->getFill()
+            // تلوين الصفوف المتناوبة بلون رمادي فاتح
+            if ($rowNumber % 2 == 0) {
+                $sheet->getStyle("A$rowNumber:H$rowNumber")->getFill()
                     ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
-                    ->getStartColor()->setRGB('E9E9E9');
+                    ->getStartColor()->setRGB('E9ECEF'); // لون رمادي فاتح
             }
-            $row++;
+            $rowNumber++;
         }
 
-        // Auto-size columns
-        foreach (range('A', 'H') as $column) {
-            $sheet->getColumnDimension($column)->setAutoSize(true);
+        // إضافة حدود خفيفة لجميع الخلايا
+        $borderStyle = [
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                    'color' => ['rgb' => 'D3D3D3'] // لون حدود رمادي خفيف
+                ]
+            ]
+        ];
+        $lastRow = $rowNumber - 1; // آخر صف تمت كتابته
+        $sheet->getStyle("A1:H$lastRow")->applyFromArray($borderStyle);
+
+        // ضبط حجم الأعمدة تلقائيًا
+        foreach (range('A', 'H') as $columnLetter) {
+            $sheet->getColumnDimension($columnLetter)->setAutoSize(true);
         }
 
-        // Prepare the file for download
+        // إعداد الملف للتحميل
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment;filename="' . $course . '_Questions.xlsx"');
+        header('Content-Disposition: attachment;filename="' . $courseName . '_Questions.xlsx"');
         header('Cache-Control: max-age=0');
 
-        $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
+        // حفظ الملف وإرساله للمستخدم
+        $writer = IOFactory::createWriter($excelFile, 'Xlsx');
         $writer->save('php://output');
         exit;
 
-    } catch (Exception $e) {
-        die("An error occurred: " . $e->getMessage());
+    } catch (Exception $error) {
+        // في حالة حدوث خطأ، عرض رسالة الخطأ
+        die("حدث خطأ: " . $error->getMessage());
     }
 }else if (isset($_GET['import']) && $_SERVER['REQUEST_METHOD'] === 'POST') {
     // التحقق من وجود ملف مرفوع
