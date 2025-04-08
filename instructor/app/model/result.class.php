@@ -4,12 +4,11 @@ class Result extends Dbh { // الكلاس يرث من كلاس قاعدة ال�
 
     // دالة لجلب جميع النتائج
     public function getAll() {
-        // التحقق إذا كان المستخدم مدير
+        // تحديد الاستعلام بناءً على صلاحية المستخدم
         if ($_SESSION['mydata']->isAdmin) {
-            // استعلام لجلب جميع النتائج للمدير
+            // استعلام للمدير
             $query = "SELECT r.id, r.testID, t.name AS testName, s.name AS studentName, 
-                      r.studentID, r.startTime, r.endTime, r.score, 
-                      (SELECT name FROM student WHERE id = r.studentID) AS student, 
+                      r.studentID, r.startTime, r.endTime, 
                       ipaddr, hostname, 
                       getResultGrade(r.id) AS FinalGrade, 
                       getResultMaxGrade(r.id) AS TestDegree
@@ -18,12 +17,11 @@ class Result extends Dbh { // الكلاس يرث من كلاس قاعدة ال�
                       INNER JOIN student s ON s.id = r.studentID
                       GROUP BY t.id, r.id
                       ORDER BY r.endTime DESC";
-            $statement = $this->connect()->prepare($query); // تحضير الاستعلام
+            $statement = $this->connect()->prepare($query);
         } else {
-            // استعلام لجلب النتائج للمدرس فقط
+            // استعلام للمدرس
             $query = "SELECT r.id, r.testID, t.name AS testName, s.name AS studentName, 
-                      r.studentID, r.startTime, r.endTime, r.score, 
-                      (SELECT name FROM student WHERE id = r.studentID) AS student, 
+                      r.studentID, r.startTime, r.endTime, 
                       ipaddr, hostname, 
                       getResultGrade(r.id) AS FinalGrade, 
                       getResultMaxGrade(r.id) AS TestDegree
@@ -33,13 +31,13 @@ class Result extends Dbh { // الكلاس يرث من كلاس قاعدة ال�
                       WHERE t.instructorID = :aid AND !r.isTemp AND getResultMaxGrade(r.id) > 0
                       GROUP BY t.id, r.id
                       ORDER BY r.endTime DESC";
-            $statement = $this->connect()->prepare($query); // تحضير الاستعلام
-            $statement->bindParam(":aid", $_SESSION['mydata']->id); // ربط معرف المدرس
+            $statement = $this->connect()->prepare($query);
+            $statement->bindParam(":aid", $_SESSION['mydata']->id);
         }
         
-        $statement->execute(); // تنفيذ الاستعلام
-        $results = $statement->fetchAll(PDO::FETCH_OBJ); // جلب النتائج ككائنات
-        return $results; // إرجاع النتائج
+        $statement->execute();
+        $results = $statement->fetchAll(PDO::FETCH_OBJ);
+        return $results;
     }
 
     // دالة لجلب النتائج غير المقدمة
