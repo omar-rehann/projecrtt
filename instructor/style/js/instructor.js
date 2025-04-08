@@ -108,24 +108,15 @@ function customConfirm(lnk, conf, succ) {
     $('#assignButton').click(function(e) {
         var questions = $(this).data('questions');
 
-        if (questions == 0 && $('#RandomRules li').length == 0) {
+        if (questions == 0) {
             Swal.fire({
                 icon: 'error',
                 title: 'Can\'t assign an empty test',
-                text: 'You Must add questions to the test before assign it!'
+                text: 'You must add questions to the test before assigning it!'
             });
             return false;
-        } else {
-            if ($('li .fa-exclamation-circle').length) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'No Enought Questions!',
-                    text: 'Make sure you have enought Questions for random rules'
-                });
-                return false;
-            }
-            return true;
         }
+        return true;
     });
 
     $('.submitAssign').on('click', function(e) {
@@ -199,32 +190,6 @@ function customConfirm(lnk, conf, succ) {
         })
 
     });
-    $('#RandomRules').on('click', '.deleteCrsQuestions', function(e) {
-        e.preventDefault();
-        var li = $(this).closest("li");
-        var cID = $(this).data('cid');
-        var diff = $(this).data('diff');
-        var tID = $('#tstID').val();
-        Swal.fire({
-            title: 'Are you sure?',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Yes'
-        }).then((result) => {
-            if (result.value) {
-                $.post("app/controller/test.inc.php?deleteRandomRule", {
-                    testID: tID,
-                    courseID: cID,
-                    diff: diff
-                }, function(data, status) {
-                    li.remove();
-                });
-            }
-        })
-
-    });
 
     $(document).on('click', '.deleteAnswer', function(e) {
         e.preventDefault();
@@ -253,58 +218,6 @@ function customConfirm(lnk, conf, succ) {
             completeanswer.remove();
             li.remove();
         }
-    });
-    $("#createRandomRule").click(function() {
-        var num = $('#numofQ').val();
-        var diff = $('#difficulty').val();
-        var diffText = $('#difficulty').children("option:selected").text();
-        var cat = $('#select :selected').text();
-        var catval = $('#select :selected').val();
-        var tID = $('#tstID').val();
-        $.post("app/controller/test.inc.php?addRandomRule", {
-            testID: tID,
-            courseID: catval,
-            diff: diff,
-            Count: num
-        }, function(data, status) {
-            if (data == 'success') {
-                var listItems = $('#RandomRules .crsname');
-                listItems.each(function(idx, li) {
-                    var crs = $(li).text();
-                    var difficulty = $(li).closest('li').find('.diffspan').text();
-                    if (crs === cat && diffText === difficulty) {
-                        $(li).parent().parent().parent().remove();
-                    }
-                });
-
-                $("#RandomRules").append('<li class="list-group-item">' +
-                    '<div class="row">' +
-                    '<div class="col-auto">' +
-                    '  Adding' +
-                    '</div>' +
-                    '<div class="col-auto">' +
-                    '  <span class="badge badge-primary">' + num + '</span>' +
-                    '</div>' +
-                    '<div class="col-auto">' +
-                    '  <span class="badge badge-info diffspan">' + ((diff == 1) ? 'Easy' : ((diff == 2) ? 'Moderate' : 'Hard')) + '</span>' +
-                    '</div>' +
-                    '<div class="col-auto">' +
-                    '  Questions From' +
-                    '</div>' +
-                    '<div class="col-auto">' +
-                    ' <span class="badge badge-info crsname">' + cat + '</span>' +
-                    '</div>' +
-                    '<i class="fa fa-minus-circle deleteCrsQuestions" data-cid = "' + catval + '" data-diff = "' + diff + '" style="font-size:33px;color:red;cursor:pointer;"></i>' +
-                    '</div>' +
-                    '</li>');
-            } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Oops...',
-                    text: data
-                })
-            }
-        });
     });
     $('#updateAssignedTest').on('show.bs.modal', function(e) {
         var gID = $(e.relatedTarget).data('id');
