@@ -5,8 +5,6 @@ START TRANSACTION;
 SET time_zone = "+00:00";
 
 
-
-
 --
 -- Database: `final`
 --
@@ -291,7 +289,7 @@ CREATE TABLE `groups` (
 --
 
 INSERT INTO `groups` (`id`, `name`, `assignedTest`, `settingID`, `instructorID`) VALUES
-(12, 'C', 39, 79, 29);
+(12, 'C', 43, 83, 29);
 
 -- --------------------------------------------------------
 
@@ -311,17 +309,6 @@ CREATE TABLE `groups_has_students` (
 
 INSERT INTO `groups_has_students` (`groupID`, `studentID`, `joinDate`) VALUES
 (12, 201234567, '2025-03-22 15:20:31');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `group_invitations`
---
-
-CREATE TABLE `group_invitations` (
-  `groupID` int(11) DEFAULT NULL,
-  `code` varchar(100) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci ROW_FORMAT=DYNAMIC;
 
 -- --------------------------------------------------------
 
@@ -353,133 +340,6 @@ INSERT INTO `instructor` (`id`, `name`, `email`, `password`, `phone`, `password_
 -- --------------------------------------------------------
 
 --
--- Table structure for table `instructor_invitations`
---
-
-CREATE TABLE `instructor_invitations` (
-  `code` varchar(36) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci ROW_FORMAT=DYNAMIC;
-
---
--- Dumping data for table `instructor_invitations`
---
-
-INSERT INTO `instructor_invitations` (`code`) VALUES
-('3436379149'),
-('1312453377'),
-('539210089'),
-('1674630452'),
-('3744290488'),
-('864598149'),
-('3248271963'),
-('1787738721'),
-('3196124642'),
-('532171308'),
-('2723223231'),
-('2185838764'),
-('2545306565'),
-('2874152779'),
-('1086485958'),
-('2222957120'),
-('877293811'),
-('1631290451'),
-('1531707478'),
-('236751871'),
-('148687258'),
-('1992997360'),
-('4106573718'),
-('2775996231'),
-('3568843964'),
-('2026107465'),
-('1564106584'),
-('3132078862'),
-('117311189'),
-('3311579761'),
-('4077317859'),
-('1783626138'),
-('3514693432'),
-('4041026664'),
-('3139201766'),
-('580160503'),
-('4202771515'),
-('4268978939'),
-('3318004562'),
-('1234787235'),
-('839183929'),
-('2921875704'),
-('609458657'),
-('3872747522'),
-('2947251994'),
-('1016969511'),
-('2648424452'),
-('1258454550'),
-('2383856834'),
-('3153797934'),
-('1797035629'),
-('585013224'),
-('1216893643'),
-('1088299832'),
-('358495416'),
-('848558203'),
-('1102213090'),
-('1286406505'),
-('332146294'),
-('1155120592'),
-('2378742868'),
-('3935557185'),
-('3836907877'),
-('3210208983'),
-('588454037'),
-('1833890942'),
-('70513812'),
-('423772056'),
-('4190370638'),
-('1531441236'),
-('4022909221'),
-('1169577104'),
-('1362625431'),
-('4029146575'),
-('2145234280'),
-('2145458316'),
-('2322854885'),
-('1668422571'),
-('2835878077'),
-('3203506061'),
-('3917381082'),
-('3900456002'),
-('2590793991'),
-('2959313765'),
-('2457178678'),
-('2497901998'),
-('2440229972'),
-('1764908271'),
-('3133973013'),
-('1435313637'),
-('3044961426'),
-('1564720312'),
-('3987270514'),
-('3228301631'),
-('4128396261'),
-('1379081102'),
-('1993513991'),
-('3653415330'),
-('3387494218'),
-('3862202104'),
-('3823950470'),
-('3502156019'),
-('132801621'),
-('483119632'),
-('224998045'),
-('4132551462'),
-('2803516455'),
-('3720358475'),
-('2284280245'),
-('3044255350'),
-('4293298884');
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `mails`
 --
 
@@ -501,7 +361,17 @@ INSERT INTO `mails` (`id`, `resultID`, `studentID`, `instructorID`, `sends_at`, 
 (6, 37, NULL, NULL, '2025-03-22 13:29:24', 0, 2),
 (7, 37, NULL, NULL, '2025-03-22 13:29:24', 0, 3),
 (8, 37, NULL, NULL, '2025-03-22 14:03:08', 0, 2),
-(9, 38, NULL, NULL, '2025-03-22 14:03:08', 0, 3);
+(9, 38, NULL, NULL, '2025-03-22 14:03:08', 0, 3),
+(10, 38, NULL, NULL, '2025-04-04 23:18:23', 0, 2),
+(11, 39, NULL, NULL, '2025-04-04 23:18:23', 0, 3),
+(12, 39, NULL, NULL, '2025-04-04 23:18:59', 0, 2),
+(13, 39, NULL, NULL, '2025-04-08 22:09:22', 0, 2),
+(14, 40, NULL, NULL, '2025-04-08 22:09:22', 0, 3),
+(15, 40, NULL, NULL, '2025-04-08 22:10:01', 0, 2),
+(16, 41, NULL, NULL, '2025-04-08 22:15:06', 0, 2),
+(17, 41, NULL, NULL, '2025-04-08 22:15:06', 0, 3),
+(18, 42, NULL, NULL, '2025-04-08 22:20:22', 0, 2),
+(19, 42, NULL, NULL, '2025-04-08 22:20:22', 0, 3);
 
 -- --------------------------------------------------------
 
@@ -526,11 +396,14 @@ CREATE TABLE `question` (
 --
 
 INSERT INTO `question` (`id`, `question`, `type`, `points`, `difficulty`, `isTrue`, `instructorID`, `courseID`, `deleted`) VALUES
-(183, '<p>&nbsp; &nbsp; oop refet to object orinted programming ?<br></p>', 1, 10, 1, 1, 29, 69, 0),
-(184, '<p>html refet to hyper text refrance ?</p>', 1, 10, 1, 1, 29, 69, 0),
-(185, '<p><img src=\"../style/images/uploads/1742649967945042706.jpg\" width=\"100%\" style=\"width: 50%;\"></p><p>who refer omar rehan</p>', 1, 10, 1, 1, 29, 69, 0),
-(186, '<p>&nbsp; &nbsp;define subsapce ?<br></p>', 5, 5, 1, 1, 29, 69, 0),
-(187, '<p>define linaer alegabra ?</p>', 5, 10, 1, 1, 29, 69, 0);
+(183, '<p>&nbsp; &nbsp; oop refet to object orinted programming ?<br></p>', 1, 10, 1, 1, 29, 69, 1),
+(184, '<p>html refet to hyper text refrance ?</p>', 1, 10, 1, 1, 29, 69, 1),
+(185, '<p><img src=\"../style/images/uploads/1742649967945042706.jpg\" width=\"100%\" style=\"width: 50%;\"></p><p>who refer omar rehan</p>', 1, 10, 1, 1, 29, 69, 1),
+(186, '<p>&nbsp; &nbsp;define subsapce ?<br></p>', 5, 5, 1, 1, 29, 69, 1),
+(187, '<p>define linaer alegabra ?</p>', 5, 10, 1, 1, 29, 69, 1),
+(188, 'pointer refer to value ?', 1, 5, 1, 0, 29, 69, 0),
+(189, 'define Database ?', 1, 5, 1, 0, 29, 69, 0),
+(190, '<p>html refer to&nbsp;</p>', 0, 5, 1, 1, 29, 69, 0);
 
 -- --------------------------------------------------------
 
@@ -546,6 +419,16 @@ CREATE TABLE `question_answers` (
   `isCorrect` tinyint(1) DEFAULT 1,
   `points` int(2) DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci ROW_FORMAT=DYNAMIC;
+
+--
+-- Dumping data for table `question_answers`
+--
+
+INSERT INTO `question_answers` (`id`, `questionID`, `answer`, `matchAnswer`, `isCorrect`, `points`) VALUES
+(917, 190, '<p>hyper text regtance&nbsp;</p>', NULL, 1, 1),
+(918, 190, '<p>ooc</p>', NULL, 0, 1),
+(919, 190, '<p>ood</p>', NULL, 0, 1),
+(920, 190, '<p>hyper text value&nbsp;</p>', NULL, 0, 1);
 
 -- --------------------------------------------------------
 
@@ -564,16 +447,36 @@ CREATE TABLE `result` (
   `isTemp` tinyint(1) NOT NULL DEFAULT 1,
   `hostname` varchar(255) DEFAULT NULL,
   `ipaddr` varchar(15) DEFAULT NULL,
-  `score` int(11) DEFAULT NULL
+  `FinalGrade` varchar(50) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci ROW_FORMAT=DYNAMIC;
 
 --
 -- Dumping data for table `result`
 --
 
-INSERT INTO `result` (`id`, `studentID`, `testID`, `groupID`, `settingID`, `startTime`, `endTime`, `isTemp`, `hostname`, `ipaddr`, `score`) VALUES
-(37, 201234567, 38, 12, 78, '2025-03-22 13:28:54', '2025-03-22 13:29:24', 0, 'DESKTOP-P8VG2E9', '::1', NULL),
-(38, 201234567, 39, 12, 79, '2025-03-22 14:02:41', '2025-03-22 14:03:08', 0, 'DESKTOP-P8VG2E9', '::1', NULL);
+INSERT INTO `result` (`id`, `studentID`, `testID`, `groupID`, `settingID`, `startTime`, `endTime`, `isTemp`, `hostname`, `ipaddr`, `FinalGrade`) VALUES
+(37, 201234567, 38, 12, 78, '2025-03-22 13:28:54', '2025-03-22 13:29:24', 0, 'DESKTOP-P8VG2E9', '::1', '30'),
+(38, 201234567, 39, 12, 79, '2025-03-22 14:02:41', '2025-03-22 14:03:08', 0, 'DESKTOP-P8VG2E9', '::1', '15'),
+(39, 201234567, 40, 12, 80, '2025-04-04 23:18:02', '2025-04-04 23:18:23', 0, 'DESKTOP-P8VG2E9', '::1', '15'),
+(40, 201234567, 41, 12, 81, '2025-04-08 22:09:06', '2025-04-08 22:09:22', 0, 'DESKTOP-P8VG2E9', '::1', '15'),
+(41, 201234567, 42, 12, 82, '2025-04-08 22:12:36', '2025-04-08 22:15:06', 0, 'DESKTOP-P8VG2E9', '::1', '15'),
+(42, 201234567, 43, 12, 83, '2025-04-08 22:20:09', '2025-04-08 22:20:22', 0, 'DESKTOP-P8VG2E9', '::1', '10');
+
+--
+-- Triggers `result`
+--
+DELIMITER $$
+CREATE TRIGGER `update_final_grade_on_insert` BEFORE INSERT ON `result` FOR EACH ROW BEGIN
+    SET NEW.FinalGrade = getResultGrade(NEW.id);
+END
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `update_final_grade_on_update` BEFORE UPDATE ON `result` FOR EACH ROW BEGIN
+    SET NEW.FinalGrade = getResultGrade(NEW.id);
+END
+$$
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -601,7 +504,19 @@ INSERT INTO `result_answers` (`id`, `resultID`, `questionID`, `answerID`, `isTru
 (459, 37, 185, NULL, 1, NULL, 10, 1),
 (460, 37, 184, NULL, 1, NULL, 10, 1),
 (461, 38, 186, NULL, 0, 'i dont now ', 0, 1),
-(462, 38, 187, NULL, 0, 'linear branch of linear alegabra', 0, 1);
+(462, 38, 187, NULL, 0, 'linear branch of linear alegabra', 0, 1),
+(463, 39, 189, NULL, 0, NULL, 5, 1),
+(464, 39, 190, 917, 1, NULL, 5, 1),
+(465, 39, 188, NULL, 0, NULL, 5, 1),
+(466, 40, 188, NULL, 0, NULL, 5, 1),
+(467, 40, 189, NULL, 0, NULL, 5, 1),
+(468, 40, 190, 917, 1, NULL, 5, 1),
+(469, 41, 188, NULL, 0, NULL, 5, 1),
+(470, 41, 189, NULL, 0, NULL, 5, 1),
+(471, 41, 190, 917, 1, NULL, 5, 1),
+(472, 42, 188, NULL, 0, NULL, 5, 1),
+(473, 42, 189, NULL, 0, NULL, 5, 1),
+(474, 42, 190, 917, 1, NULL, 5, 1);
 
 --
 -- Triggers `result_answers`
@@ -661,7 +576,7 @@ CREATE TABLE `student` (
 --
 
 INSERT INTO `student` (`id`, `name`, `email`, `phone`, `password`, `password_token`, `token_expire`, `suspended`, `sessionID`) VALUES
-(201234567, 'omar rehan', 'omar@gmail.com', '01276612119', '276506d3704c67d67ff9a500be50dd95', NULL, NULL, 0, 'fqcn4ba1vq1g309tfbhbcrhf5m'),
+(201234567, 'omar rehan', 'omar@gmail.com', '01276612119', '276506d3704c67d67ff9a500be50dd95', NULL, NULL, 0, '8i83canahdpb3a997tgh6ljit3'),
 (207654321, 'ahmed rehan', 'ahmed@gmail.com', '1276612118', '$2y$10$XvGr82rLJ2KM1q7NYhYKNeqdWGnnDVbdfEG2nChoOOaBTj.omYCua', NULL, NULL, 0, NULL);
 
 -- --------------------------------------------------------
@@ -708,7 +623,11 @@ CREATE TABLE `test` (
 
 INSERT INTO `test` (`id`, `name`, `courseID`, `deleted`, `instructorID`) VALUES
 (38, 'final', 68, 0, 29),
-(39, 'end', 68, 0, 29);
+(39, 'end', 68, 0, 29),
+(40, 'midterm', 68, 0, 29),
+(41, 'l', 68, 0, 29),
+(42, 'final_exam', 68, 0, 29),
+(43, 'omar', 68, 0, 29);
 
 -- --------------------------------------------------------
 
@@ -727,11 +646,18 @@ CREATE TABLE `tests_has_questions` (
 --
 
 INSERT INTO `tests_has_questions` (`testID`, `questionID`, `rand`) VALUES
-(38, 183, NULL),
-(38, 184, NULL),
-(38, 185, NULL),
-(39, 186, NULL),
-(39, 187, NULL);
+(40, 188, NULL),
+(40, 189, NULL),
+(40, 190, NULL),
+(41, 188, NULL),
+(41, 189, NULL),
+(41, 190, NULL),
+(42, 188, NULL),
+(42, 189, NULL),
+(42, 190, NULL),
+(43, 188, NULL),
+(43, 189, NULL),
+(43, 190, NULL);
 
 -- --------------------------------------------------------
 
@@ -802,7 +728,11 @@ CREATE TABLE `test_settings` (
 
 INSERT INTO `test_settings` (`id`, `startTime`, `endTime`, `duration`, `random`, `prevQuestion`, `viewAnswers`, `releaseResult`, `sendToStudent`, `sendToInstructor`, `passPercent`, `instructorID`, `testName`) VALUES
 (78, '2025-03-22 15:27:00', '2025-03-22 16:27:00', 45, 1, 0, 0, 1, 1, 1, 60, 29, ''),
-(79, '2025-03-22 16:01:00', '2025-03-22 17:01:00', 30, 0, 1, 0, 1, 1, 1, 60, 29, '');
+(79, '2025-03-22 16:01:00', '2025-03-22 17:01:00', 30, 0, 1, 0, 1, 1, 1, 60, 29, ''),
+(80, '2025-04-05 01:17:00', '2025-04-06 02:17:00', 30, 1, 1, 0, 1, 1, 1, 60, 29, ''),
+(81, '2025-04-09 00:08:00', '2025-04-09 01:08:00', 30, NULL, 0, 0, 1, 1, 1, 60, 29, ''),
+(82, '2025-04-09 00:10:00', '2025-04-09 01:10:00', 30, NULL, 0, 0, 1, 1, 1, 60, 29, ''),
+(83, '2025-04-09 00:19:00', '2025-04-09 01:19:00', 30, NULL, 0, 0, 1, 1, 1, 60, 29, '');
 
 --
 -- Indexes for dumped tables
@@ -837,13 +767,6 @@ ALTER TABLE `groups`
 ALTER TABLE `groups_has_students`
   ADD UNIQUE KEY `my_unique_key` (`groupID`,`studentID`) USING BTREE,
   ADD KEY `groups_has_students_ibfk_2` (`studentID`) USING BTREE;
-
---
--- Indexes for table `group_invitations`
---
-ALTER TABLE `group_invitations`
-  ADD UNIQUE KEY `code` (`code`) USING BTREE,
-  ADD KEY `groupID` (`groupID`) USING BTREE;
 
 --
 -- Indexes for table `instructor`
@@ -995,37 +918,37 @@ ALTER TABLE `instructor`
 -- AUTO_INCREMENT for table `mails`
 --
 ALTER TABLE `mails`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- AUTO_INCREMENT for table `question`
 --
 ALTER TABLE `question`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=188;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=191;
 
 --
 -- AUTO_INCREMENT for table `question_answers`
 --
 ALTER TABLE `question_answers`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=917;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=921;
 
 --
 -- AUTO_INCREMENT for table `result`
 --
 ALTER TABLE `result`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=43;
 
 --
 -- AUTO_INCREMENT for table `result_answers`
 --
 ALTER TABLE `result_answers`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=463;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=475;
 
 --
 -- AUTO_INCREMENT for table `test`
 --
 ALTER TABLE `test`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=40;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=44;
 
 --
 -- AUTO_INCREMENT for table `test_invitations`
@@ -1043,7 +966,7 @@ ALTER TABLE `test_sessions`
 -- AUTO_INCREMENT for table `test_settings`
 --
 ALTER TABLE `test_settings`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=80;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=84;
 
 --
 -- Constraints for dumped tables
@@ -1070,12 +993,6 @@ ALTER TABLE `groups`
 ALTER TABLE `groups_has_students`
   ADD CONSTRAINT `groups_has_students_ibfk_1` FOREIGN KEY (`groupID`) REFERENCES `groups` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `groups_has_students_ibfk_2` FOREIGN KEY (`studentID`) REFERENCES `student` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-
---
--- Constraints for table `group_invitations`
---
-ALTER TABLE `group_invitations`
-  ADD CONSTRAINT `group_invitations_ibfk_1` FOREIGN KEY (`groupID`) REFERENCES `groups` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Constraints for table `mails`
@@ -1165,3 +1082,6 @@ ALTER TABLE `test_settings`
   ADD CONSTRAINT `test_settings_ibfk_1` FOREIGN KEY (`instructorID`) REFERENCES `instructor` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 COMMIT;
 
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
