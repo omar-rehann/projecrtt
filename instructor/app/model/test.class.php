@@ -43,9 +43,7 @@ class Test extends Dbh { // الكلاس يرث من كلاس قاعدة الب�
         // استعلام لجلب تفاصيل اختبار محدد
         $query = "SELECT id, name, instructorID, courseID,
                   (SELECT name FROM course WHERE id = courseID) AS course,
-                  (SELECT COUNT(*) FROM test_invitations WHERE testID = t.id) AS assignedToLinks,
                   (SELECT COUNT(*) FROM tests_has_questions WHERE testID = t.id) AS fixedQuestions,
-                  (SELECT COUNT(*) FROM test_invitations WHERE testID = t.id) AS links,
                   (SELECT COUNT(*) FROM result WHERE testID = t.id) AS inResults,
                   getTestGrade(id) AS TestGrade
                   FROM test t 
@@ -66,7 +64,7 @@ class Test extends Dbh { // الكلاس يرث من كلاس قاعدة الب�
                   (SELECT name FROM test t WHERE t.id = r.testID) AS testName, 
                   ts.startTime, ts.endTime,
                   COUNT(r.id) AS results, ts.viewAnswers, ts.releaseResult,
-                  (CASE WHEN r.groupID IS NULL THEN 'Assigned To Link'
+                  (CASE WHEN r.groupID IS NULL THEN ''
                   ELSE CONCAT('Assigned To Group ', (SELECT name FROM groups g WHERE g.id = r.groupID))
                   END) AS type
                   FROM result r
