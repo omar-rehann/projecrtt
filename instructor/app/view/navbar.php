@@ -14,6 +14,7 @@ $usr = $obj->getByEmail($_SESSION['mydata']->email);
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav mr-auto">
         <?php
+        // Admin
           if($_SESSION['mydata']->isAdmin){ ?>
             <li class="nav-item <?php echo (isset($_GET['instructors'])?'active':'') ?>">
               <a class="nav-link" href="?instructors">
@@ -33,6 +34,7 @@ $usr = $obj->getByEmail($_SESSION['mydata']->email);
                 Results
               </a>
             </li>
+            <!-- Instructor -->
           <?php }else{ ?>
         <li class="nav-item <?php echo (empty($_GET)?'active':'') ?>">
           <a class="nav-link" href=".">
@@ -81,6 +83,7 @@ $usr = $obj->getByEmail($_SESSION['mydata']->email);
 
 <?php } ?>
       </ul>
+      <!-- Student -->
       <span class="badge badge-secondary">Hello <?php echo $_SESSION['mydata']->name ?></span>
 
       <ul class="navbar-nav ">
