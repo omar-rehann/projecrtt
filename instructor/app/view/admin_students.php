@@ -5,6 +5,7 @@ if (!defined('NotDirectAccess')){
 require_once 'header.php';
 require_once 'navbar.php';
 $_admin = new admin();
+// Import Student 
 if(isset($_GET['succImp']) and $_GET['succImp'] == 1){ ?>
 	<div class="card-body">
 	<div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -41,7 +42,7 @@ if(isset($_GET['succImp']) and $_GET['succImp'] == 1){ ?>
           <th>Name</th>
           <th>Email</th>
           <th>Phone Number</th>
-					<th>Registered</th>
+			<th>Registered</th>
           <th>Status</th>
           <th>-</th>
           <th>-</th>
