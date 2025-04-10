@@ -118,14 +118,10 @@ $("#requestResetForm").submit(function(e) {
 });
 $("#StartTest").click(function(e) {
     e.preventDefault();
-    var code = $(this).data('code');
-    var iscode = $(this).data('iscode');
-    var url = 'app/controller/test.inc.php?action=initiateTest';
+    // var url = 'app/controller/test.inc.php?action=initiateTest';
 
-    var posting = $.post(url, {
-        code: code,
-        iscode: iscode
-    });
+    var posting = $.post(url); // تم إزالة إرسال البيانات
+
     posting.done(function(msg) {
         if (msg == 'success') {
             localStorage.clear();
@@ -161,7 +157,6 @@ $("#StartTest").click(function(e) {
                 text: msg,
             })
         }
-
     });
 });
 

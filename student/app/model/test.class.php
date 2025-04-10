@@ -435,26 +435,7 @@ class Test extends dbh { // الكلاس يرث من كلاس قاعدة الب�
         return $results[0]->viewAnswers; // إرجاع حالة العرض
     }
 
-    // دالة للتحقق مما إذا تم أخذ الاختبار عبر رمز دعوة
-    public function testAlreadyTaken($code) {
-        // استعلام للتحقق من وجود نتيجة بناءً على رمز الدعوة
-        $query = "SELECT * FROM result 
-                  WHERE testID = (SELECT testID FROM test_invitations WHERE id = AES_DECRYPT(UNHEX(:code), 'final')) 
-                  AND StudentID = :studID";
-        
-        $statement = $this->connect()->prepare($query); // تحضير الاستعلام
-        $statement->bindParam(":code", $code); // ربط رمز الدعوة
-        $statement->bindParam(":studID", $_SESSION['student']->id); // ربط معرف الطالب
-        $statement->execute(); // تنفيذ الاستعلام
-        $count = $statement->rowCount(); // جلب عدد الصفوف
-        
-        if ($count > 0) {
-            return true; // إرجاع نجاح إذا تم أخذ الاختبار
-        } else {
-            return false; // إرجاع فشل إذا لم يتم أخذه
-        }
-    }
-
+  
     // دالة لإرسال رسائل النتائج
     public function sendResultMails() {
         // استعلام لإضافة رسائل بريدية للطالب والمدرس

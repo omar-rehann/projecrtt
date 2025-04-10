@@ -106,7 +106,12 @@ define('ContainsPagination', true);
                             <div> <i class="fa fa-check-square-o"></i> MCQ Questions can have multiple Answers</div>
                         </li>
                     </ul>
-                    <button type="button" id="StartTest" data-id="<?php echo (isset($_GET['id'])? $_GET['id']:0) ?>" data-code="<?php echo (isset($_GET['code'])? $_GET['code']:0) ?>" data-iscode="<?php echo (isset($_GET['code'])? 1:0) ?>" class="btn btn-primary btn-lg btn-block">Start Test</button>
+                    <button type="button" 
+        id="StartTest" 
+        data-id="<?php echo (isset($_GET['id']) ? $_GET['id'] : 0) ?>" 
+        class="btn btn-primary btn-lg btn-block">
+    Start Test
+</button>
                 </div>
             </div>
         </div>
@@ -118,11 +123,6 @@ define('ContainsPagination', true);
 ?>
     <div class="container mt-3">
         <?php
-            if (isset($_SESSION['test'])){
-                $link = $_SESSION['linkID'];
-                unset($_SESSION['linkID']);
-                header('Location: ?tests&code='. $link .'&start');
-            }
             $checkActiveTest = $_test->checkActiveTest();
             if ($checkActiveTest != 0){
                 echo '<div class="alert alert-primary" role="alert">You have an active test! <a href="?tests&resume">Resume Test</a></div>';

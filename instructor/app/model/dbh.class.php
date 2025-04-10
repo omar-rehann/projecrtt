@@ -5,7 +5,7 @@ class dbh {
     private $port = "3306";       // منفذ الاتصال
     private $username = "root";   // اسم المستخدم
     private $password = "";       // كلمة المرور
-    private $dbName = "final";    // اسم قاعدة البيانات
+    private $dbName = "online";    // اسم قاعدة البيانات
 
     // دالة الاتصال بقاعدة البيانات
     public function connect() {
