@@ -12,7 +12,7 @@
   echo '<script src="http://mt2arab.altervista.org/cdn/jquery.backstretch.js?latest"></script>
   <script type="text/javascript">
   jQuery(document).ready(function(){
-  $.backstretch("https://i.imgur.com/qnL1prM.jpg");
+		$.backstretch("BackGround/photo.jpg");
   });
   </script>';
   }
